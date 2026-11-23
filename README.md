@@ -27,7 +27,12 @@
 
 ## 快速开始
 
-`index.html` 是**单文件**应用，但用了 ES Module 动态加载模型，
+**在线体验（免安装）**：
+
+- 项目主页（GitHub Pages，本仓库托管）：<https://xuquen.github.io/sfzcopys/>
+- 在线工具：<https://idcard-score.app.workbuddy.host/?sharecode=6HC62RJLEW>
+
+`site/index.html` 是**单文件**应用，但用了 ES Module 动态加载模型，
 `file://` 直开会被浏览器 CORS 拦掉，必须走 HTTP：
 
 ```bash
@@ -60,9 +65,11 @@ python3 -m http.server 8080
 ### 保存文件名与联网 OCR（v7.10+，可选）
 
 - 文件名模板：`{姓名}{证号}{有效期止}{地址}{时间}{固定文字}{序号}` 任意组合，默认 `身份证-{时间}`；
-  序号按「新人像面 +1」计数，起始号可设。
-- 联网 OCR（百度通用文字识别）**默认关**，开启需 confirm；**只上传模板里用到字段的裁剪小条图**
-  （实测 6~18 KB，整卡 150 KB+），人像照片与整卡不出本机。key 只存浏览器 localStorage。
+  序号按「新人像面 +1」计数，起始号可设。相邻标签没写分隔符会**自动补 `-`**（v7.14）。
+- 联网 OCR（OCR.space 通用识别）**默认关**，开启需 confirm；**只上传模板里用到字段的裁剪小条图**
+  （实测 5~20 KB，整卡 150 KB+），人像照片与整卡不出本机。Key 只存浏览器 localStorage。
+- 申请免费 Key（每月 25,000 次，约 1 分钟）：**[OCR.space Key 申请教程](docs/ocr-space-key.md)**。
+  服务商用 OCR.space（网页可直连）；百度接口无跨域许可，浏览器直连必被拦，已放弃。
 
 ---
 
@@ -137,11 +144,13 @@ PDF 的 MediaBox 为 `595.28 × 841.89 pt = 210.0 × 297.0 mm`。
 ## 目录
 
 ```
+index.html                 项目展示页（GitHub Pages 主页）
+docs/ocr-space-key.md      OCR.space 免费 Key 申请教程
 site/index.html            A4 拼版工具（主界面）
 site/_lab.html             原「打分台」：引擎切换 / 逐张打标 / 基准报告，调算法用
 site/lib/jspdf.umd.min.js  PDF 导出（自托管，免 CDN）
 site/ml/                   模型与运行时（3.5 MB，可懒加载）
-versions/v3..v11/          历史版本快照 + md5 指纹 + 变更说明
+versions/v3..v14/          历史版本快照 + md5 指纹 + 变更说明
 ```
 
 `_lab.html` 不参与主流程，但保留着——改检测算法时没有比它更好用的回归工具。

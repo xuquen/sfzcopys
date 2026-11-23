@@ -117,6 +117,28 @@ main{
 .gear:active{transform:scale(.93)}
 #sheet{position:fixed;inset:0;z-index:85;display:none}
 #sheet.show{display:block}
+/* OCR key 教程浮层：压住设置弹层（85），让位提示条（90） */
+#ocrHelp{position:fixed;inset:0;z-index:88;display:none}
+#ocrHelp.show{display:block}
+#ocrHelp .ohBg{position:absolute;inset:0;background:#0b0d1059;backdrop-filter:blur(2px)}
+#ocrHelp .ohPanel{
+  position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:18px 18px 0 0;
+  padding:18px 18px calc(20px + env(safe-area-inset-bottom));max-height:82vh;overflow:auto;
+  transform:translateY(100%);transition:transform .24s;
+}
+#ocrHelp.show .ohPanel{transform:none}
+@media(min-width:600px){
+  #ocrHelp .ohPanel{left:50%;right:auto;width:560px;margin-left:-280px;border-radius:18px;top:50%;bottom:auto;transform:translate(-50%,40%)}
+  #ocrHelp.show .ohPanel{transform:translate(-50%,-50%)}
+}
+#ocrHelp .ohHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+#ocrHelp .ohHead b{font-size:16px}
+#ocrHelp .done{border:0;background:#eef2f8;border-radius:8px;padding:7px 14px;font-size:14px;color:var(--ink,#1a2233)}
+#ocrHelp pre{
+  white-space:pre-wrap;word-break:break-all;font:13px/1.9 ui-monospace,Menlo,Consolas,monospace;
+  color:#1a2233;background:#f6f8fb;border:1px solid #e3e7ee;border-radius:10px;padding:14px;
+}
+#ocrHelp pre a{word-break:break-all}
 #sheet .shBg{position:absolute;inset:0;background:#0b0d1059;backdrop-filter:blur(2px)}
 #sheet .shPanel{
   position:absolute;left:0;right:0;bottom:0;background:var(--bg);
@@ -281,7 +303,7 @@ body.fsopen #toast.show{transform:translate(-50%,0)}
 <header>
   <h1>身份证复印件</h1>
   <span class="sub">A4 · 1:1 原大</span>
-  <span class="ver" id="verTag" title="页面版本">v7.14</span>
+  <span class="ver" id="verTag" title="页面版本">v7.15</span>
   <button class="gear" id="btnSet" title="设置：水印、去阴影、白平衡、白底增强" aria-label="设置">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1.03z"/></svg>
   </button>
@@ -425,12 +447,35 @@ body.fsopen #toast.show{transform:translate(-50%,0)}
         </div>
         <div class="row">
           <div><div class="lab">OCR.space Key</div></div>
-          <input class="wmtext" id="ocrSpaceKey" type="password" style="width:150px" autocomplete="off">
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:7px">
+            <input class="wmtext" id="ocrSpaceKey" type="password" style="width:150px" autocomplete="off">
+            <button class="tagb" id="btnOcrHelp" type="button">怎么获取 Key？</button>
+          </div>
         </div>
         <div class="row">
           <div class="desc">取 key：ocr.space/ocrapi/freekey 用邮箱免费申请（每月 25000 次，key 只存本机）。网页可直连，上传的只有字段小条图，不是整卡。</div>
         </div>
       </div>
+  </div>
+</div>
+
+<!-- OCR key 获取教程：纯文本，带可点链接（作者要求） -->
+<div id="ocrHelp">
+  <div class="ohBg" id="ohBg"></div>
+  <div class="ohPanel">
+    <div class="ohHead"><b>获取免费 OCR.space Key</b><button class="done" id="ohClose">关闭</button></div>
+    <pre>申请（约 1 分钟）：
+1. 打开申请页：<a href="https://ocr.space/ocrapi/freekey" target="_blank" rel="noopener">ocr.space/ocrapi/freekey</a>
+2. 填一个常用邮箱，点「GET API KEY」
+3. 收件箱里会收到 API Key（K8 开头的一串）
+4. 复制回来，粘到设置的「OCR.space Key」输入框
+   （点输入框以外的地方即自动保存）
+
+说明：
+· 免费额度：每月 25000 次，单文件 500KB
+  （这里只传字段小条图，一张只有几 KB，足够用）
+· Key 只存在本机浏览器里，不会上传给任何服务器
+· 更多说明：<a href="https://github.com/xuquen/sfzcopys/blob/main/docs/ocr-space-key.md" target="_blank" rel="noopener">GitHub 图文教程</a></pre>
   </div>
 </div>
 
@@ -2389,6 +2434,7 @@ $("#fs").onclick = e => {
 };
 addEventListener("keydown", e => {
   if (e.key === "Escape"){
+    if ($("#ocrHelp").classList.contains("show")){ $("#ocrHelp").classList.remove("show"); return; } // 教程浮层最上层，先关它
     if ($("#fs").classList.contains("show")) closeFs();
     if ($("#sheet").classList.contains("show")) $("#sheet").classList.remove("show");
   }
@@ -2398,6 +2444,9 @@ addEventListener("keydown", e => {
 $("#btnSet").onclick = () => $("#sheet").classList.add("show");
 $("#shBg").onclick = () => $("#sheet").classList.remove("show");
 $("#shClose").onclick = () => $("#sheet").classList.remove("show");
+/* OCR key 教程浮层：按钮开，遮罩/关闭/Esc 关 */
+$("#btnOcrHelp").onclick = () => $("#ocrHelp").classList.add("show");
+$("#ohBg").onclick = $("#ohClose").onclick = () => $("#ocrHelp").classList.remove("show");
 initFnOcr();
 
 /* 复制整张 A4 到剪贴板。
