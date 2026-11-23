@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sfzcopys · 身份证打印前处理 — 纯本地网页工具</title>
+<meta name="description" content="拍照/微信图/扫描件 → 本地自动校正转正 → 标准 300dpi A4 拼版 → PDF/图片/打印。全程本地处理，图片不上传。">
+<style>
+  :root{
+    --ink:#1a2233; --sub:#5b6577; --line:#e3e7ee; --bg:#f7f8fb; --card:#ffffff;
+    --blue:#2456c8; --blue-d:#1a3f96; --ok:#177245;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+       color:var(--ink);background:var(--bg);line-height:1.65}
+  a{color:var(--blue);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
+
+  header{border-bottom:1px solid var(--line);background:var(--card)}
+  .bar{display:flex;align-items:center;gap:12px;height:58px}
+  .logo{width:30px;height:22px;border:2px solid var(--ink);border-radius:4px;position:relative;flex:none}
+  .logo::before{content:"";position:absolute;right:3px;top:3px;bottom:3px;width:8px;background:var(--ink);border-radius:1px;opacity:.75}
+  .brand{font-weight:700;font-size:17px;letter-spacing:.5px}
+  .brand code{font-weight:700;color:var(--blue);background:none;font-size:17px}
+  .ver{margin-left:auto;font-size:12px;color:var(--sub);border:1px solid var(--line);
+       border-radius:999px;padding:2px 10px;background:var(--bg)}
+
+  .hero{padding:64px 0 48px;display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
+  @media(max-width:760px){.hero{grid-template-columns:1fr;padding:44px 0 36px}}
+  .kicker{display:inline-block;font-size:13px;color:var(--blue);border:1px solid #c8d6f5;
+          background:#eef3fe;border-radius:999px;padding:3px 12px;margin-bottom:16px}
+  h1{font-size:34px;line-height:1.3;letter-spacing:.5px}
+  .hero p.lead{margin:16px 0 26px;color:var(--sub);font-size:16px}
+  .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:11px 20px;
+       font-size:15px;font-weight:600;border:1px solid transparent;cursor:pointer}
+  .btn.primary{background:var(--blue);color:#fff}
+  .btn.primary:hover{background:var(--blue-d);text-decoration:none}
+  .btn.ghost{border-color:var(--line);background:var(--card);color:var(--ink)}
+  .btn.ghost:hover{border-color:#c3cbda;text-decoration:none}
+
+  /* CSS 画的示意卡面：几何色块，非真实证件 */
+  .mock{position:relative;width:100%;max-width:380px;aspect-ratio:85.6/54;margin:0 auto;
+        border-radius:10px;background:linear-gradient(135deg,#e8edf6,#f6f8fc 60%,#e6ebf4);
+        border:1px solid var(--line);box-shadow:0 18px 40px -18px rgba(26,34,51,.35);
+        overflow:hidden}
+  .mock .photo{position:absolute;right:6%;top:14%;width:26%;height:72%;border-radius:6px;
+        background:linear-gradient(160deg,#c9d4e6,#a9b8d4)}
+  .mock .l1{position:absolute;left:7%;top:16%;width:34%;height:7%;background:#b9c4d8;border-radius:3px}
+  .mock .l2{position:absolute;left:7%;top:30%;width:52%;height:5%;background:#cbd5e6;border-radius:3px}
+  .mock .l3{position:absolute;left:7%;top:40%;width:46%;height:5%;background:#cbd5e6;border-radius:3px}
+  .mock .l4{position:absolute;left:7%;top:50%;width:56%;height:5%;background:#d3dbe9;border-radius:3px}
+  .mock .num{position:absolute;left:7%;bottom:10%;width:62%;height:7%;background:#a9b6cf;border-radius:3px}
+  .mock .a4{position:absolute;inset:0;background:
+        repeating-linear-gradient(0deg,transparent 0 34px,rgba(36,86,200,.05) 34px 35px)}
+  .mock .crop{position:absolute;width:14px;height:14px;border:2px solid var(--blue);opacity:.85}
+  .mock .crop.tl{left:-1px;top:-1px;border-right:0;border-bottom:0}
+  .mock .crop.br{right:-1px;bottom:-1px;border-left:0;border-top:0}
+  .mock .tag{position:absolute;right:-10px;top:-10px;background:var(--ok);color:#fff;font-size:11px;
+        padding:3px 10px;border-radius:999px;box-shadow:0 4px 10px rgba(23,114,69,.35)}
+
+  section{padding:44px 0;border-top:1px solid var(--line)}
+  h2{font-size:22px;margin-bottom:8px}
+  .sub{color:var(--sub);margin-bottom:26px;font-size:15px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.grid{grid-template-columns:1fr}}
+  .f{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+  .f b{display:block;font-size:15px;margin-bottom:6px}
+  .f span{font-size:13.5px;color:var(--sub)}
+  .f .ic{display:inline-flex;width:34px;height:34px;border-radius:9px;background:#eef3fe;
+         color:var(--blue);align-items:center;justify-content:center;font-size:17px;margin-bottom:10px}
+
+  .steps{counter-reset:s;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:760px){.steps{grid-template-columns:1fr}}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;position:relative}
+  .step::before{counter-increment:s;content:counter(s);position:absolute;top:-12px;left:16px;
+        width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;
+        font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .step b{display:block;margin:8px 0 4px;font-size:15px}
+  .step span{font-size:13.5px;color:var(--sub)}
+
+  .tech{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:14px}
+  @media(max-width:640px){.tech{grid-template-columns:1fr}}
+  .tech div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;color:var(--sub)}
+  .tech div b{color:var(--ink);font-weight:600}
+
+  footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--sub);font-size:13px;
+         display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .privacy{background:#f0f7f2;border:1px solid #cfe6d8;color:#2a5c40;border-radius:12px;
+           padding:14px 18px;font-size:14px;margin-top:26px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <div class="logo" aria-hidden="true"></div>
+    <div class="brand"><code>sfzcopys</code> 身份证打印前处理</div>
+    <span class="ver">v7.14 · MIT</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <span class="kicker">纯前端 · 单文件 · 图片不出手机</span>
+      <h1>拍照的身份证，<br>出来就是能打印的标准复印件</h1>
+      <p class="lead">自动找卡、转正、白平衡、去阴影、底纹漂白，拼成 300dpi 精确 85.6×54mm 的 A4 版面，一键存 PDF / 图片 / 打印。全程在浏览器本地完成。</p>
+      <div class="cta">
+        <a class="btn primary" href="https://idcard-score.app.workbuddy.host/?sharecode=6HC62RJLEW" rel="noopener">在线体验</a>
+        <a class="btn ghost" href="./site/index.html">网页版入口（本仓库托管）</a>
+        <a class="btn ghost" href="https://github.com/xuquen/sfzcopys" rel="noopener">GitHub 仓库</a>
+      </div>
+    </div>
+    <div class="mock" aria-hidden="true">
+      <span class="tag">A4 300dpi</span>
+      <div class="a4"></div>
+      <div class="photo"></div>
+      <div class="l1"></div><div class="l2"></div><div class="l3"></div><div class="l4"></div>
+      <div class="num"></div>
+      <div class="crop tl"></div><div class="crop br"></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <section>
+    <h2>它做什么</h2>
+    <p class="sub">从一张歪斜、有阴影、偏色的照片，到一张能直接打印的证件复印件，中间的活全归它。</p>
+    <div class="grid">
+      <div class="f"><span class="ic">⌖</span><b>自动找卡与转正</b><span>神经网络角点检测（1.9MB ONNX-WASM 本地推理）+ 经典算法兜底，180° 倒拍、面别判反都能纠正。</span></div>
+      <div class="f"><span class="ic">◐</span><b>自动白平衡</b><span>亮部灰世界估计通道增益，偏蓝偏黄一拍就正；色相恒定，不会把国徽拉灰。</span></div>
+      <div class="f"><span class="ic">☀</span><b>去阴影 / 白底增强</b><span>平场校正抹掉不均匀光照；局部纸白归一化把底纹推纯白，人像彩色零改动。</span></div>
+      <div class="f"><span class="ic">▦</span><b>A4 精确拼版</b><span>300dpi 下 85.6×54mm 精确 1:1，整页贴图零重采样；正反面并排，间距 10mm。</span></div>
+      <div class="f"><span class="ic">⇩</span><b>PDF / 图片 / 打印</b><span>自托管 jsPDF 导出 A4 PDF，或存长边图片；打印走 @page A4，尺寸不走样。</span></div>
+      <div class="f"><span class="ic">✎</span><b>文件名模板 + OCR</b><span>{姓名}{证号}{有效期止}{地址}{时间}{序号} 自由组合；可选 OCR.space 联网识别，只上传字段小条图。</span></div>
+    </div>
+    <div class="privacy"><b>隐私是设计前提，不是附加选项：</b>检测、校正、拼版、导出全部在浏览器本地完成，图片不上传。唯一联网项是可选的 OCR 命名，且只上传模板用到的字段小条图（如姓名那一行），整卡与人像照片不出设备。</div>
+  </section>
+
+  <section>
+    <h2>三步出片</h2>
+    <div class="steps">
+      <div class="step"><b>导入</b><span>手机拍照 / 相册 / 微信图 / 桌面扫描件，一次可以丢多张。</span></div>
+      <div class="step"><b>检查</b><span>自动转正与拼版，不满意可手动旋转、删卡、开辅助线。</span></div>
+      <div class="step"><b>导出</b><span>保存 PDF / 图片，或直接打印；文件名按模板自动生成。</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>技术要点</h2>
+    <div class="tech">
+      <div><b>单文件 HTML</b>：全部逻辑、样式、模型加载在一个 index.html 里，克隆即用，无构建。</div>
+      <div><b>本地推理</b>：DocCornerNet 角点模型 1.9MB，onnxruntime-web WASM，无服务端。</div>
+      <div><b>像素管线</b>：白平衡 → 平场去阴影 → 局部纸白漂白，四级顺序经过 20 张基准实测标定。</div>
+      <div><b>兼容性</b>：现代浏览器；拍照入口走系统相机；HEIC/TIFF/PDF 会提前拦截并提示。</div>
+    </div>
+  </section>
+
+  <section style="border-top:0;padding-top:0">
+    <div class="cta">
+      <a class="btn primary" href="https://idcard-score.app.workbuddy.host/?sharecode=6HC62RJLEW" rel="noopener">立即在线体验</a>
+      <a class="btn ghost" href="https://github.com/xuquen/sfzcopys" rel="noopener">查看源码（MIT）</a>
+    </div>
+  </section>
+
+  <footer>
+    <span>© 2026 xuquen · MIT License</span>
+    <span>本页与工具均不收集任何数据 · 卡面示意图为 CSS 几何色块，非真实证件</span>
+  </footer>
+</div>
+
+</body>
+</html>

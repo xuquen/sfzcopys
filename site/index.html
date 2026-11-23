@@ -281,7 +281,7 @@ body.fsopen #toast.show{transform:translate(-50%,0)}
 <header>
   <h1>身份证复印件</h1>
   <span class="sub">A4 · 1:1 原大</span>
-  <span class="ver" id="verTag" title="页面版本">v7.11</span>
+  <span class="ver" id="verTag" title="页面版本">v7.14</span>
   <button class="gear" id="btnSet" title="设置：水印、去阴影、白平衡、白底增强" aria-label="设置">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1.03z"/></svg>
   </button>
@@ -348,7 +348,7 @@ body.fsopen #toast.show{transform:translate(-50%,0)}
             <div class="lab">去阴影</div>
             <div class="desc">拍照时的阴影、光照不匀会抹平，卡面亮度拉齐</div>
           </div>
-          <label class="sw"><input type="checkbox" id="ckSh" checked><i></i></label>
+          <label class="sw"><input type="checkbox" id="ckSh"><i></i></label>
         </div>
         <div class="row">
           <div>
@@ -393,7 +393,7 @@ body.fsopen #toast.show{transform:translate(-50%,0)}
         <div class="row">
           <div>
             <div class="lab">保存文件名</div>
-            <div class="desc">点下方标签插入到模板里，顺序随意；留空恢复默认「身份证-时间」</div>
+            <div class="desc">点下方标签插入到模板里，顺序随意；相邻标签没写分隔符会自动补「-」；留空恢复默认「身份证-时间」</div>
           </div>
         </div>
         <div class="row"><input class="wmtext" id="fnTpl" value="身份证-{时间}"></div>
@@ -419,20 +419,16 @@ body.fsopen #toast.show{transform:translate(-50%,0)}
         <div class="row">
           <div>
             <div class="lab">联网 OCR</div>
-            <div class="desc">百度通用文字识别，供文件名标签用。只上传模板里用到字段的区域小图（如只用姓名就只传姓名那一行），整卡与人像照片不外传</div>
+            <div class="desc">供文件名标签用。只上传模板里用到字段的区域小图（如只用姓名就只传姓名那一行），整卡与人像照片不外传</div>
           </div>
           <label class="sw"><input type="checkbox" id="ckOcr"><i></i></label>
         </div>
         <div class="row">
-          <div><div class="lab">API Key</div></div>
-          <input class="wmtext" id="ocrKey" type="password" style="width:150px" autocomplete="off">
+          <div><div class="lab">OCR.space Key</div></div>
+          <input class="wmtext" id="ocrSpaceKey" type="password" style="width:150px" autocomplete="off">
         </div>
         <div class="row">
-          <div><div class="lab">Secret Key</div></div>
-          <input class="wmtext" id="ocrSecret" type="password" style="width:150px" autocomplete="off">
-        </div>
-        <div class="row">
-          <div class="desc">取 key：百度智能云 console.bce.baidu.com → 产品「文字识别」→ 应用列表 → 创建应用（勾选通用文字识别）→ 得 API Key / Secret Key。个人认证每月有免费额度，key 只存本机。上传的只有字段小条图，不是整卡。</div>
+          <div class="desc">取 key：ocr.space/ocrapi/freekey 用邮箱免费申请（每月 25000 次，key 只存本机）。网页可直连，上传的只有字段小条图，不是整卡。</div>
         </div>
       </div>
   </div>
@@ -1664,7 +1660,7 @@ const cards = [];                      // {id, cv(1011×638), cvWb(可选中性�
 let uid = 0;
 /* 白平衡是「显示/输出」的选择，不改 cv 本身 —— 朝向与面别判据全在 cv 上算过，
    这样开关切换不会让判据结果漂移，只是换一份像素去画。 */
-let SH = true;                         // 去阴影（平场校正），默认开：均匀图增益≈1，等于没动
+let SH = false;                        // 去阴影（平场校正），默认关（作者要求 v7.14）：扫描件本就均匀，拍照有阴影再开
 let WB = true;                         // 自动白平衡
 let HC = false;                        // 高对比度（底纹调白 + 卡边投影），默认关
 /* 像素来源四级：cv（原始）→ cvWb（白平衡）→ sh（去阴影）→ hc（白底增强）。
@@ -2014,11 +2010,13 @@ function saveBlob(blob, name){
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
 }
 
-/* ===== 保存文件名模板 + 百度联网 OCR =====
+/* ===== 保存文件名模板 + 联网 OCR =====
    标签：{姓名}{证号}{有效期止}{地址} 来自 OCR；{时间}=日期+时分秒；{固定文字}=手输；
    {序号}=人像面张数计数（新人像 +1，同一人正反面同号），起始号可设。
-   **最小上传**：按模板里实际用到的标签，只截取对应字段的小块区域送百度通用文字识别，
+   **最小上传**：按模板里实际用到的标签，只截取对应字段的小块区域送 OCR，
    整卡（含人像照片）不出本机。姓名/证号/地址在人像面，有效期止在国徽面。
+   服务商用 OCR.space（网页可直连，CORS 开放）。百度接口没有 CORS 头（2026-11-23 实测），
+   浏览器直连必被拦、又不想引中转服务，故整条砍掉，别再往回加。
    key 只存本机 localStorage。 */
 const FNT_DEF = "身份证-{时间}";
 const FN_TAGS = ["姓名", "证号", "有效期止", "地址", "时间", "固定文字", "序号"];
@@ -2058,8 +2056,13 @@ function buildName(ext){
     "序号":   String(fnSeqNow()),
   };
   let s = ($("#fnTpl").value || "").trim() || FNT_DEF;
-  for (const k in map) s = s.split("{" + k + "}").join(map[k]);
-  s = s.replace(/\{[^}]*\}/g, "")          // 没识别出来的字段直接删掉，不留 {xx}
+  /* 字段用 \x01(起) \x02(止) 包裹再展开：两个止/起标记相邻 = 标签紧挨标签，
+     自动补 "-" 分隔（作者实测「张大林510524…20261123」全粘一起没法读）；空字段整段删 */
+  for (const k in map) s = s.split("{" + k + "}").join("\x01" + map[k] + "\x02");
+  s = s.replace(/\x02\x01/g, "-")        // 字段紧挨字段 → 补分隔符
+       .replace(/\x01\x02/g, "")         // 空字段整段删掉
+       .replace(/[\x01\x02]/g, "")       // 头尾残余标记
+       .replace(/\{[^}]*\}/g, "")        // 没识别出来的字段直接删掉，不留 {xx}
        .replace(/-{2,}/g, "-").replace(/_{2,}/g, "_")
        .replace(/^[-_ ]+|[-_ ]+$/g, "")
        .replace(/[\\/:*?"<>|]/g, "");
@@ -2070,20 +2073,8 @@ function updateFnPrev(){
   if (el) el.textContent = "预览：" + buildName("jpg");
 }
 
-async function baiduToken(){
-  const cached = JSON.parse(localStorage.getItem("baiduTok") || "null");
-  if (cached && cached.exp > Date.now()) return cached.tok;
-  const key = $("#ocrKey").value.trim(), sec = $("#ocrSecret").value.trim();
-  if (!key || !sec) throw new Error("先在设置里填百度 API Key / Secret Key");
-  const r = await fetch("https://aip.baidubce.com/oauth/2.0/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: `grant_type=client_credentials&client_id=${encodeURIComponent(key)}&client_secret=${encodeURIComponent(sec)}`,
-  });
-  const j = await r.json();
-  if (!j.access_token) throw new Error("取 token 失败：" + (j.error_description || j.error || ""));
-  localStorage.setItem("baiduTok", JSON.stringify({ tok: j.access_token, exp: Date.now() + ((j.expires_in || 86400) - 600) * 1000 }));
-  return j.access_token;
+function ocrKeysReady(){
+  return !!$("#ocrSpaceKey").value.trim();
 }
 /* 按归一化框裁出字段小图（如「姓名」约 460×105 px），只有这一小块会被上传 */
 function cropNorm(src, box){
@@ -2118,19 +2109,33 @@ function parseField(tag, lines){
   }
   return "";
 }
+/* OCR.space 通用文字识别：网页可直连（api.ocr.space 开放 CORS）。
+   实测（2026-11-23）：证号 18 位/地址/有效期/姓名（原尺寸）全对；
+   **裁片不要放大**——3x/4x 放大反而漏字或乱码，送 1x 原尺寸。
+   OCREngine=2 数字最稳；demo key 会带 [Note:…] 前缀行，解析前剔掉。 */
+async function ocrSpaceOne(cv, key){
+  const blob = await new Promise(r => cv.toBlob(r, "image/jpeg", 0.9));
+  const fd = new FormData();
+  fd.append("file", blob, "field.jpg");
+  fd.append("language", "chs");
+  fd.append("OCREngine", "2");
+  const r = await fetch("https://api.ocr.space/parse/image", {
+    method: "POST",
+    headers: { apikey: key },
+    body: fd,
+  });
+  const j = await r.json();
+  if (j.IsErroredOnProcessing) throw new Error((j.ErrorMessage && j.ErrorMessage[0]) || "OCR.space 处理失败");
+  let text = (j.ParsedResults && j.ParsedResults[0] && j.ParsedResults[0].ParsedText) || "";
+  text = text.replace(/\[Note:[^\]]*\]\s*/g, "");
+  return text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+}
 async function ocrFields(job){
-  const tok = await baiduToken();
+  const key = $("#ocrSpaceKey").value.trim();
+  if (!key) throw new Error("先在设置里填 OCR.space Key");
   for (const tag of job.fields){
     const cv = cropNorm(job.card.cv, FN_CROPS[tag].box);
-    const b64 = cv.toDataURL("image/jpeg", 0.9).split(",")[1];
-    const r = await fetch("https://aip.baidubce.com/rest/2.0/ocr/v1/general_basic?access_token=" + tok, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: "language_type=CHN_ENG&image=" + encodeURIComponent(b64),
-    });
-    const j = await r.json();
-    if (j.error_code) throw new Error(j.error_msg || ("error_code " + j.error_code));
-    const lines = (j.words_result || []).map(w => w.words || "");
+    const lines = await ocrSpaceOne(cv, key);
     const v = parseField(tag, lines);
     if (v){
       job.card.ocr = job.card.ocr || {};
@@ -2170,8 +2175,7 @@ function initFnOcr(){
   $("#fnTpl").value  = localStorage.getItem("fnTpl")  || FNT_DEF;
   $("#fnFix").value  = localStorage.getItem("fnFix")  || "";
   $("#fnSeq").value  = localStorage.getItem("fnSeq")  || "1";
-  $("#ocrKey").value = localStorage.getItem("ocrKey") || "";
-  $("#ocrSecret").value = localStorage.getItem("ocrSecret") || "";
+  $("#ocrSpaceKey").value = localStorage.getItem("ocrSpaceKey") || "";
   // 标签芯片
   const tags = $("#fnTags");
   FN_TAGS.forEach(t => {
@@ -2192,16 +2196,16 @@ function initFnOcr(){
     localStorage.setItem("fnSeq", String(Math.max(1, parseInt($("#fnSeq").value) || 1)));
   };
   ["fnTpl", "fnFix", "fnSeq"].forEach(id => $("#" + id).addEventListener("input", () => { saveFn(); updateFnPrev(); }));
-  ["ocrKey", "ocrSecret"].forEach(id => $("#" + id).addEventListener("change", e => localStorage.setItem(id, e.target.value.trim())));
+  ["ocrSpaceKey"].forEach(id => $("#" + id).addEventListener("change", e => localStorage.setItem(id, e.target.value.trim())));
   $("#ckOcr").onchange = e => {
     const on = e.target.checked;
     if (on){
-      if (!$("#ocrKey").value.trim() || !$("#ocrSecret").value.trim()){
+      if (!ocrKeysReady()){
         e.target.checked = false;
-        toast("先填百度 API Key / Secret Key（下方有获取说明）", true);
+        toast("先填 OCR.space Key（ocr.space/ocrapi/freekey 免费申请）", true);
         return;
       }
-      if (!confirm("联网识别只会把模板里用到的字段小块图（如姓名那一行）上传到百度，整卡不外传。\n确定开启吗？")){
+      if (!confirm("联网识别只会把模板里用到的字段小块图（如姓名那一行）上传到 OCR.space，整卡不外传。\n确定开启吗？")){
         e.target.checked = false;
         return;
       }
@@ -2212,8 +2216,7 @@ function initFnOcr(){
     if (on) cards.forEach(queueOcr);
     else { ocrQueue.length = 0; toast("已关闭联网识别，图片回到纯本地处理"); }
   };
-  OCR_ON = localStorage.getItem("ocrOn") === "1";
-  if (OCR_ON && (!$("#ocrKey").value.trim() || !$("#ocrSecret").value.trim())) OCR_ON = false;
+  OCR_ON = localStorage.getItem("ocrOn") === "1" && ocrKeysReady();
   $("#ckOcr").checked = OCR_ON;
   setOcrBadge(OCR_ON);
   updateFnPrev();
