@@ -43,8 +43,10 @@
 - **在线工具（GitHub Pages，本仓库托管，长期有效）**：<https://xuquen.github.io/sfzcopys/site/index.html>
 - 项目主页：<https://xuquen.github.io/sfzcopys/>
 - 备用入口（第三方托管，**不保证长期稳定**）：<https://idcard-score.app.workbuddy.host/?sharecode=6HC62RJLEW>
-- **离线包下载**（[Releases](https://github.com/xuquen/sfzcopys/releases/latest)）：
-  [sfzcopys-site-v7.15.zip](https://github.com/xuquen/sfzcopys/releases/download/v7.15/sfzcopys-site-v7.15.zip)（2.4 MB，含模型，解压本地起 HTTP 即用）
+- **单机版下载**（推荐普通用户）：[sfzcopys-standalone-v7.15.html](https://github.com/xuquen/sfzcopys/releases/download/v7.15/sfzcopys-standalone-v7.15.html)（4.9 MB 单文件，
+  模型/运行时全内嵌，**下载后双击即用**，`file://` 直开、无需起 HTTP）
+- **离线包下载（目录版，开发者友好）**（[Releases](https://github.com/xuquen/sfzcopys/releases/latest)）：
+  [sfzcopys-site-v7.15.zip](https://github.com/xuquen/sfzcopys/releases/download/v7.15/sfzcopys-site-v7.15.zip)（2.4 MB，解压本地起 HTTP 即用）
 
 `site/index.html` 是**单文件**应用，但用了 ES Module 动态加载模型，
 `file://` 直开会被浏览器 CORS 拦掉，必须走 HTTP：
