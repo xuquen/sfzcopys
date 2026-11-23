@@ -42,6 +42,8 @@
 
 - 项目主页（GitHub Pages，本仓库托管）：<https://xuquen.github.io/sfzcopys/>
 - 在线工具：<https://idcard-score.app.workbuddy.host/?sharecode=6HC62RJLEW>
+- **离线包下载**（[Releases](https://github.com/xuquen/sfzcopys/releases/latest)）：
+  [sfzcopys-site-v7.15.zip](https://github.com/xuquen/sfzcopys/releases/download/v7.15/sfzcopys-site-v7.15.zip)（2.4 MB，含模型，解压本地起 HTTP 即用）
 
 `site/index.html` 是**单文件**应用，但用了 ES Module 动态加载模型，
 `file://` 直开会被浏览器 CORS 拦掉，必须走 HTTP：
