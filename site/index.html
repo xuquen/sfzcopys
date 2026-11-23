@@ -2,266 +2,475 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>身份证矫正 · 打分台</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="format-detection" content="telephone=no">
+<title>身份证复印件 · A4 打印</title>
 <link rel="icon" href="data:,">
 <style>
-:root{--bg:#14161a;--panel:#1c1f26;--panel2:#23272f;--line:#32373f;--txt:#e6e9ee;
---dim:#8b939e;--ok:#2fbf71;--bad:#e5544b;--warn:#e0a53a;--acc:#4a9eff}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--txt);
-font:14px/1.55 -apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
-header{position:sticky;top:0;z-index:30;background:#181b20f2;backdrop-filter:blur(10px);
-border-bottom:1px solid var(--line);padding:11px 16px;display:flex;flex-wrap:wrap;
-gap:10px;align-items:center}
-h1{font-size:15.5px;margin:0;font-weight:600}
-.hintbar{margin:10px 16px 0;padding:8px 12px;font-size:12px;line-height:1.7;color:#9aa4b0;
-background:#1a1f26;border:1px solid #2b333d;border-radius:8px}
-.hintbar b{color:#cfe8ff;font-weight:600}
-.stat{font-size:12px;color:var(--dim)}
-.stat b{color:var(--txt)}
-.spacer{flex:1}
-button{background:var(--panel2);color:var(--txt);border:1px solid var(--line);
-border-radius:7px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit}
-button:hover{border-color:#4a5058;background:#2a2f38}
-button:disabled{opacity:.45;cursor:default}
-button.primary{background:#2255aa;border-color:#2f6cd0}
-button.primary:hover{background:#2a63c4}
-button.on-ok{background:#1d5c3c;border-color:var(--ok);color:#d9ffe9}
-button.on-bad{background:#5c241f;border-color:var(--bad);color:#ffe0dd}
-button.on-sel{background:#3a2b16;border-color:#8a6a2a;color:#f0c274}
-button.mlon{background:#123a4d;border-color:#2f8ec4;color:#bfe9ff}
-.rotgrp{display:flex;gap:4px;align-items:stretch;border:1px solid var(--line);
-border-radius:8px;padding:2px;background:#191d23}
-.rotgrp button{padding:3px 9px;font-size:12px;border:none;background:transparent}
-.rotgrp button:hover{background:#2a2f38}
-.rotgrp button.on{background:#1e4a6d;color:#cfe8ff}
-.tab{padding:5px 11px;border-radius:14px;font-size:12.5px;border:1px solid var(--line);
-cursor:pointer;color:var(--dim);background:transparent}
-.tab.active{background:#2b3340;color:#fff;border-color:#4a5568}
-/* 问答区 */
-#ask{margin:14px 16px 0;background:#1a1f26;border:1px solid #2f4a63;border-radius:10px;overflow:hidden}
-#ask .hd{padding:9px 13px;background:#1d2a36;font-size:13px;font-weight:600;
-display:flex;align-items:center;gap:8px}
-#ask .hd span.tagq{font-size:11px;font-weight:400;color:#7fb6e8;background:#1b3purple}
-#ask .rows{padding:6px 13px 12px;display:flex;flex-direction:column;gap:9px}
-.q{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12.5px}
-.q .qt{color:#c3cbd6;min-width:0}
-.q .opts{display:flex;gap:5px;flex-wrap:wrap}
-.opt{font-size:12px;padding:3px 10px;border-radius:12px;border:1px solid #38414d;
-color:#9aa4b0;cursor:pointer;background:#20262e}
-.opt:hover{border-color:#5a6673}
-.opt.sel{background:#1e4a6d;border-color:#3d86c0;color:#cfe8ff}
-/* 拖放区 */
-#drop{margin:14px 16px;border:2px dashed #3a4450;border-radius:12px;padding:38px 20px;
-text-align:center;color:var(--dim);cursor:pointer;transition:.15s;background:#171a1f}
-#drop:hover,#drop.over{border-color:var(--acc);color:#cfe3ff;background:#18222e}
-#drop .big{font-size:15px;color:#cdd6e1;margin-bottom:6px}
-#drop .sm{font-size:12px}
-main{padding:6px 16px 70px;display:flex;flex-direction:column;gap:13px}
-.item{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.item.v-ok{border-color:#26603f}
-.item.v-bad{border-color:#6b2b26}
-.it-head{display:flex;align-items:center;gap:9px;padding:8px 12px;background:#1f232a;
-border-bottom:1px solid var(--line);flex-wrap:wrap}
-.idx{font-family:ui-monospace,monospace;font-size:11.5px;color:var(--dim);
-background:#2a2f38;padding:2px 7px;border-radius:5px}
-.fname{font-size:12px;color:#b6bec9;max-width:min(400px,44vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.fbase{font-size:11px;color:#8fb8d8;font-family:ui-monospace,monospace;
-max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-background:#1b2733;border:1px solid #2b3f52;padding:1px 6px;border-radius:5px}
-.badge{font-size:11.5px;padding:2px 8px;border-radius:10px;border:1px solid transparent}
-.b-gold{background:#123a26;color:#7ce6a8;border-color:#2f6b4a}
-.steps{font-size:10.5px;color:#79828f;font-family:ui-monospace,monospace;
-padding:0 12px 6px;background:#1b1f25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.flash{outline:2px solid var(--acc);outline-offset:2px}
-.b-ok{background:#1a3f2b;color:#6fe0a0;border-color:#2b6a48}
-.b-warn{background:#42351a;color:#e8c274;border-color:#6b5426}
-.b-bad{background:#42201d;color:#f0938b;border-color:#6b2f2a}
-.b-unk{background:#2a2f38;color:var(--dim);border-color:#3a4048}
-.b-whole{background:#16293f;color:#7cc4f5;border-color:#2b5478}
-.metrics{display:flex;gap:5px;flex-wrap:wrap;margin-left:auto}
-.chip{font-family:ui-monospace,monospace;font-size:10.5px;color:#93a0ae;
-background:#242a33;border:1px solid #313943;padding:1px 6px;border-radius:5px}
-.chip.hi{color:#8fd3ff;border-color:#2f5375}
-.chip.warn{color:#ffcf7a;border-color:#6b5322;background:#2d2618}
-.chip.bad{color:#f0a29a;border-color:#6b2b26;background:#2b1c1b}
-/* 被判成银行卡/社保卡的条目：默认折叠，点「显示被剔除」才露面；露面时压暗以示区别 */
-#list.hideNonId .item.nonid{display:none}
-.item.nonid{opacity:.62;border-style:dashed}
-.body{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
-.pane{background:#101317;position:relative;min-height:240px;display:flex;
-align-items:center;justify-content:center;padding:8px}
-.pane canvas{max-width:100%;max-height:400px;display:block;border-radius:3px}
-.pane .cap{position:absolute;left:8px;top:6px;font-size:10.5px;color:#6b7480;
-background:#000a;padding:1px 6px;border-radius:4px;pointer-events:none;z-index:2}
-.orig canvas{cursor:crosshair}
-/* 四角微调条 */
-.pane.orig{flex-direction:column;gap:7px;justify-content:flex-start}
-.nudge{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;
-width:100%;font-size:11.5px;color:var(--dim)}
-.nudge .csg,.nudge .pad,.nudge .stp{display:flex;gap:3px}
-.nudge button{background:#20242b;border:1px solid var(--line);color:#9aa4b0;
-border-radius:6px;padding:2px 7px;font-size:12px;line-height:1.5;cursor:pointer;font-family:inherit}
-.nudge button:hover{border-color:#4a5568;color:#dfe7f0}
-.nudge .cs.on{background:#3a2b16;border-color:#b08a2e;color:#ffd24a}
-.nudge .stp button.on{background:#1e4a6d;border-color:#3d86c0;color:#cfe8ff}
-.nudge .pad{display:grid;grid-template-columns:repeat(3,26px);
-grid-template-rows:repeat(2,24px);gap:2px}
-.nudge .pad button{padding:0;font-size:13px}
-.nudge .pad [data-nudge="u"]{grid-column:2;grid-row:1}
-.nudge .pad [data-nudge="l"]{grid-column:1;grid-row:2}
-.nudge .pad [data-nudge="d"]{grid-column:2;grid-row:2}
-.nudge .pad [data-nudge="r"]{grid-column:3;grid-row:2}
-.foot{padding:8px 12px;display:flex;gap:9px;align-items:center;flex-wrap:wrap;
-border-top:1px solid var(--line);background:#1b1f25}
-.tags{display:flex;gap:4px;flex-wrap:wrap}
-.tag{font-size:11px;padding:3px 9px;border-radius:11px;border:1px solid var(--line);
-color:var(--dim);cursor:pointer;user-select:none;background:#20242b}
-.tag:hover{border-color:#4a5058}
-.tag.sel{background:#3a2b16;border-color:#8a6a2a;color:#f0c274}
-.note{flex:1;min-width:130px;background:#20242b;border:1px solid var(--line);
-border-radius:6px;color:var(--txt);padding:4px 9px;font-size:12px;font-family:inherit}
-.note::placeholder{color:#5c646d}
-.side{display:flex;gap:4px}
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(90px);
-background:#2b6cd0;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;
-transition:transform .25s;z-index:99;box-shadow:0 6px 22px #0009;max-width:80vw}
-#toast.show{transform:translateX(-50%) translateY(0)}
-#boot{position:fixed;inset:0;background:#14161a;display:flex;flex-direction:column;
-align-items:center;justify-content:center;gap:14px;z-index:200;color:#9aa4b0;font-size:14px}
-.spin{width:26px;height:26px;border:2.5px solid #2c3440;border-top-color:var(--acc);
-border-radius:50%;animation:sp .8s linear infinite}
+:root{
+  --bg:#f4f5f7; --card:#fff; --line:#e3e5e9; --txt:#16181d; --dim:#6b7280;
+  --acc:#1a6dff; --acc-d:#1257d6; --ok:#0f9d58; --warn:#d97706; --bad:#e11d48;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-t:env(safe-area-inset-top,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  background:var(--bg);color:var(--txt);
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;overscroll-behavior-y:none;
+}
+/* ---------- 顶栏 ---------- */
+header{
+  position:sticky;top:0;z-index:40;display:flex;align-items:baseline;gap:9px;
+  padding:calc(11px + env(safe-area-inset-top,0px)) 16px 11px;
+  background:#fffffff2;backdrop-filter:saturate(180%) blur(14px);
+  border-bottom:1px solid var(--line);
+}
+header h1{margin:0;font-size:16px;font-weight:650;letter-spacing:.2px}
+header .sub{font-size:12px;color:var(--dim)}
+/* 版本号：让作者一眼报出线上到底是哪一版，省掉「改好了但我看到的还是旧的」这类来回 */
+header .ver{
+  margin-left:auto;font-size:11px;font-weight:600;color:#5a616e;background:#f1f2f5;
+  border:1px solid var(--line);border-radius:999px;padding:2px 8px;white-space:nowrap;
+  font-variant-numeric:tabular-nums;letter-spacing:.2px;cursor:default;
+}
+header .badge{
+  font-size:11px;color:var(--ok);background:#eaf7ef;
+  border:1px solid #c9ebd6;border-radius:999px;padding:2px 9px;white-space:nowrap;
+}
+/* ---------- 主体 ---------- */
+main{
+  padding:14px 14px calc(96px + var(--safe-b));
+  max-width:940px;margin:0 auto;
+}
+.layout{display:flex;flex-direction:column;gap:14px}
+
+/* ---------- 预览 ---------- */
+/* 宽度按「视口高 - 预留」反算，保证首屏能同时看到预览和添加按钮；
+   不这么做的话 390 宽手机上 A4 预览会占 512px，把按钮顶出屏幕。 */
+.paper{
+  position:relative;background:#fff;border-radius:12px;overflow:hidden;
+  border:1px solid var(--line);box-shadow:0 1px 3px #0000000d,0 8px 24px #0000000a;
+  aspect-ratio:210/297;
+  width:min(100%,382px);margin:0 auto;cursor:zoom-in;
+}
+.paper{width:min(100%,calc((100svh - 288px) * 210 / 297))}
+.paper canvas{display:block;width:100%;height:100%}
+.paper .ph{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;color:#9aa1ac;
+  font-size:13px;text-align:center;padding:24px;pointer-events:none;
+}
+.paper .ph svg{opacity:.5}
+.paper.busy .ph{opacity:.5}
+.tip{font-size:12px;color:var(--dim);margin:9px 2px 0;line-height:1.65}
+.tip b{color:#3f4550;font-weight:600}
+.tip b.nw{white-space:nowrap}
+
+/* ---------- 卡片列表 ---------- */
+.sechd{display:flex;align-items:center;gap:8px;margin:4px 2px 8px;font-size:12.5px;color:var(--dim)}
+.sechd b{color:var(--txt);font-weight:600;font-size:13px}
+.sechd .ln{flex:1;height:1px;background:var(--line)}
+.cardrow{
+  display:flex;gap:11px;align-items:center;background:var(--card);
+  border:1px solid var(--line);border-radius:12px;padding:9px;margin-bottom:8px;
+}
+.cardrow .thumb{
+  width:104px;flex:none;border-radius:6px;overflow:hidden;
+  background:#eef0f3 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M0 8h16M8 0v16' stroke='%23e0e3e8' stroke-width='1'/%3E%3C/svg%3E");
+  aspect-ratio:85.6/54;
+}
+.cardrow .thumb img{display:block;width:100%;height:100%;object-fit:contain}
+.cardrow .info{flex:1;min-width:0}
+/* 文件名要能看全：手机相册导出的名字普遍很长（微信图片_20251109201706_519_64.jpg），
+   原来 nowrap + ellipsis 会截成「微信图片_20251109...」，两张卡分不清哪张是哪张。
+   改成允许在任意字符处折行，长名字换 2~3 行，不截断。 */
+.cardrow .nm{font-size:12px;color:var(--dim);margin-bottom:6px;line-height:1.45;overflow-wrap:anywhere;word-break:break-word}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fafbfc}
+.seg button{
+  border:0;background:transparent;font:inherit;font-size:12.5px;color:var(--dim);
+  padding:5px 11px;cursor:pointer;font-family:inherit;
+}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--acc);color:#fff;font-weight:600}
+/* 行内小按钮：旋转 / 删除 */
+.cardrow .ic{
+  border:1px solid var(--line);background:#fff;border-radius:8px;
+  width:34px;height:34px;flex:none;color:var(--dim);cursor:pointer;font-size:15px;line-height:1;
+  display:flex;align-items:center;justify-content:center;padding:0;
+}
+.cardrow .ic:active{background:#f4f6f9}
+.cardrow .rot{margin-right:6px}
+.cardrow .rot:active{background:#eef4ff;border-color:#bcd3ff;color:var(--acc)}
+.cardrow .del:active{background:#fee;border-color:#fbb;color:var(--bad)}
+.cardrow .flag{font-size:11.5px;color:var(--warn);margin-bottom:5px}
+
+/* ---------- 设置齿轮与底部弹层 ---------- */
+/* 齿轮放顶栏：z-index 40 的 sticky header 内，弹层 85（低于提示条 90，高于内容） */
+.gear{
+  align-self:center;margin-left:2px;width:30px;height:30px;flex:none;
+  border:1px solid var(--line);border-radius:8px;background:#f1f2f5;color:#5a5f66;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
+}
+.gear:active{transform:scale(.93)}
+#sheet{position:fixed;inset:0;z-index:85;display:none}
+#sheet.show{display:block}
+#sheet .shBg{position:absolute;inset:0;background:#0b0d1059;backdrop-filter:blur(2px)}
+#sheet .shPanel{
+  position:absolute;left:0;right:0;bottom:0;background:var(--bg);
+  border-radius:16px 16px 0 0;padding:14px 14px calc(16px + var(--safe-b));
+  max-height:86vh;overflow:auto;transform:translateY(100%);transition:.24s;
+  box-shadow:0 -8px 40px #0003;
+}
+#sheet.show .shPanel{transform:none}
+@media (min-width:600px){          /* 桌面端限宽居中，不全屏铺开 */
+  #sheet .shPanel{left:50%;right:auto;width:560px;margin-left:-280px}
+}
+.shHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.shHead b{font-size:15.5px}
+.shHead .done{border:0;background:#e8eaee;color:var(--txt);border-radius:8px;
+  padding:7px 15px;font-size:13.5px;cursor:pointer}
+
+/* ---------- 选项 ---------- */
+.opt{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.opt .row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.opt .row:last-child{border-bottom:0}
+.opt .row .lab{font-size:14px;flex:none}
+.opt .row .desc{font-size:11.5px;color:var(--dim);margin-top:1px}
+.sw{position:relative;width:46px;height:27px;flex:none;margin-left:auto}
+.sw input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.sw i{
+  position:absolute;inset:0;background:#d6dae0;border-radius:999px;transition:.18s;
+  pointer-events:none;
+}
+.sw i::after{
+  content:"";position:absolute;left:3px;top:3px;width:21px;height:21px;
+  background:#fff;border-radius:50%;transition:.18s;box-shadow:0 1px 3px #0003;
+}
+.sw input:checked+i{background:var(--acc)}
+.sw input:checked+i::after{transform:translateX(19px)}
+.wmtext{
+  width:100%;margin:0;padding:10px 12px;border:1px solid var(--line);border-radius:9px;
+  font:inherit;font-size:14px;background:#fafbfc;color:var(--txt);
+}
+.wmtext:focus{outline:2px solid #1a6dff33;border-color:var(--acc);background:#fff}
+/* 文件名模板的标签芯片 */
+.tagb{
+  border:1px solid var(--line);background:#fff;color:var(--txt);border-radius:999px;
+  padding:5px 11px;font-size:12.5px;cursor:pointer;font:inherit;line-height:1.2;
+}
+.tagb:active{background:#eef2f8}
+.badge.warn{background:#fdf1e7;border-color:#f2c9a0;color:#b45309}
+#wmBox{padding:12px 14px;border-bottom:1px solid var(--line);display:none}
+#wmBox.show{display:block}
+
+/* ---------- 底部操作 ---------- */
+footer{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  padding:10px 14px calc(10px + var(--safe-b));
+  background:#fffffff2;backdrop-filter:saturate(180%) blur(14px);
+  border-top:1px solid var(--line);
+}
+.acts{display:flex;gap:9px;max-width:940px;margin:0 auto}
+.btn{
+  flex:1;border:1px solid var(--line);background:#fff;color:var(--txt);
+  border-radius:11px;padding:12px 8px;font:inherit;font-size:14px;font-weight:550;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+  min-height:46px;transition:.12s;
+}
+.btn:active{transform:scale(.985);background:#f4f6f9}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff;box-shadow:0 2px 8px #1a6dff33}
+.btn.primary:active{background:var(--acc-d)}
+.btn:disabled{opacity:.42;cursor:default;transform:none}
+.btn svg{flex:none}
+.btn .t{white-space:nowrap}
+
+/* ---------- 顶部添加区 ---------- */
+.quickbar{display:flex;gap:9px;margin-bottom:12px}
+.quickbar .btn{min-height:46px;font-size:14.5px}
+
+/* ---------- 全屏查看 ---------- */
+/* 竖排：图片 + 底部工具栏。图片高度要给工具栏留出位置，否则会把它顶出屏幕。 */
+#fs{
+  position:fixed;inset:0;z-index:80;background:#0b0d10f2;backdrop-filter:blur(4px);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;padding:14px;
+}
+#fs.show{display:flex}
+#fs img{
+  max-width:100%;max-height:calc(100% - 92px);min-height:0;
+  border-radius:4px;box-shadow:0 10px 48px #000c;
+}
+.fsbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center}
+.fsbtn{
+  -webkit-appearance:none;appearance:none;font:inherit;font-size:14px;font-weight:600;
+  display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:999px;
+  color:#fff;background:#ffffff1f;border:1px solid #ffffff33;cursor:pointer;
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  transition:transform .12s,background .18s;
+}
+.fsbtn:active{transform:scale(.96);background:#ffffff33}
+.fsbtn[disabled]{opacity:.55;cursor:default;transform:none}
+.fsbtn svg{flex:none}
+.fshint{font-size:12px;color:#ffffff85;letter-spacing:.02em}
+.fshint b{color:#ffffffb3;font-weight:600}
+
+/* ---------- 提示条 ---------- */
+#toast{
+  position:fixed;left:50%;bottom:calc(84px + var(--safe-b));transform:translate(-50%,14px);
+  background:#16181dee;color:#fff;font-size:13.5px;line-height:1.5;
+  padding:10px 16px;border-radius:10px;text-align:center;
+  /* left:50% 又没给 right，fixed 的可用宽度只有半个视口，max-width 就成了摆设，
+     文案被硬折行。width:max-content 让它先按内容撑开，再交给 max-width 兜上限。 */
+  width:max-content;max-width:min(86vw,420px);overflow-wrap:anywhere;
+  opacity:0;pointer-events:none;transition:.22s;z-index:90;backdrop-filter:blur(8px);
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.warn{background:#b45309ee}
+/* 全屏看图时提示条改到顶部：底部被「复制图片」工具栏占着，压上去会挡住按钮 */
+body.fsopen #toast{bottom:auto;top:calc(16px + var(--safe-t));transform:translate(-50%,-14px)}
+body.fsopen #toast.show{transform:translate(-50%,0)}
+
+/* ---------- 忙碌遮罩 ---------- */
+#busy{
+  position:fixed;inset:0;z-index:70;background:#ffffffcc;backdrop-filter:blur(3px);
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  font-size:13.5px;color:#3f4550;
+}
+#busy.show{display:flex}
+.spin{
+  width:34px;height:34px;border:3px solid #d8dce3;border-top-color:var(--acc);
+  border-radius:50%;animation:sp .8s linear infinite;
+}
 @keyframes sp{to{transform:rotate(360deg)}}
-#prog{width:min(420px,70vw);height:4px;background:#242a33;border-radius:2px;overflow:hidden}
-#prog>i{display:block;height:100%;width:0;background:var(--acc);transition:width .2s}
-.hidden{display:none!important}
+
+/* ---------- 打印 ---------- */
+#printArea{display:none}
+
+/* 超窄屏（iPhone SE 等 320px）下顶栏塞不下四处文字，让副标题先让位，
+   标题 + 版本号 + 不上传这三样信息优先级更高 */
+@media (max-width:360px){
+  header .sub{display:none}
+}
+
+/* ---------- 桌面端 ---------- */
+@media (min-width:820px){
+  main{padding:20px 22px 110px}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:22px;align-items:start}
+  .colR{position:sticky;top:76px}
+  header{padding-left:22px;padding-right:22px}
+  /* 与预览同宽同轴，避免按钮被拉成整屏宽；高度也要按视口反算，
+     否则 1280×900 下 470px 宽的 A4 高 665px，底部提示会被固定操作栏压住 */
+  .quickbar{width:100%;max-width:min(470px, calc((100svh - 285px) * 210 / 297));margin-bottom:14px}
+  .paper{width:100%;max-width:min(470px, calc((100svh - 285px) * 210 / 297))}
+  .tip{max-width:min(470px, calc((100svh - 285px) * 210 / 297))}
+}
+@media print{
+  @page{size:A4 portrait;margin:0}
+  html,body{background:#fff!important;margin:0!important;padding:0!important;height:auto!important}
+  body>*{display:none!important}
+  #printArea{display:block!important}
+  #printArea img{display:block;width:210mm;height:297mm;margin:0;padding:0;max-width:none!important}
+}
 </style>
 </head>
 <body>
-<div id="boot"><div class="spin"></div><div id="bootTxt">正在初始化检测引擎…</div>
-<div id="prog"><i></i></div></div>
 
 <header>
-  <h1>身份证矫正 · 打分台</h1>
-  <span class="stat" id="stat"></span>
-  <div style="display:flex;gap:5px" id="tabs">
-    <div class="tab active" data-f="all">全部</div>
-    <div class="tab" data-f="bad">已标错</div>
-    <div class="tab" data-f="nodl">未存基准</div>
-  </div>
-  <div class="spacer"></div>
-  <button id="btnNext">→ 下一张未存</button>
-  <button id="btnPick">＋ 导入图片</button>
-  <button id="btnEngine" title="经典=纯几何启发式；ML=1.9MB 神经网络找框">引擎：经典</button>
-  <button id="btnNonId" title="被判成银行卡/社保卡的张数。点一下展开核对，判错的条目里点「这是身份证」就能救回">已剔除 0 张</button>
-  <button id="btnRerunAll">全部重跑</button>
-  <button id="btnDlAll">下载全部矫正图</button>
-  <button id="btnCopy">复制反馈</button>
-  <button class="primary" id="btnExport">导出校正报告</button>
-  <input type="file" id="file" multiple accept="image/*" class="hidden">
+  <h1>身份证复印件</h1>
+  <span class="sub">A4 · 1:1 原大</span>
+  <span class="ver" id="verTag" title="页面版本">v7.11</span>
+  <button class="gear" id="btnSet" title="设置：水印、去阴影、白平衡、白底增强" aria-label="设置">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1.03z"/></svg>
+  </button>
+  <span class="badge" id="badge">不上传</span>
 </header>
-<div class="hintbar">
-  ① 框不准 → 拖原图四角；<b>要精确调</b> → 点 ①②③④ 选角，再用 <b>↑←↓→</b> 微调（步长 1/5/20px）。
-  ② 方向不对 → <b>↺90° / ↻90° / 180° / 复位</b>；框对了但压扁拉宽 → <b>竖⇄横</b>。<br>
-  ③ <b>调好一张就点「存基准」</b>（绿色 GOLD），右上「→ 下一张未存」可以一路走完 20 张。基准框 = 我反推算法用的金标准。<br>
-  ④ 输出 1011×638、圆角 R=35px 透明角；下载文件名固定为 <b>序号_原文件名.png</b>，和列表序号一一对应，不会错位。<br>
-  ⑤ 本版检测：按身份证固有 1.585 比例生成候选 → 用「框里像不像卡面」打分 → 全分辨率收边。<br>
-  ⑥ 右上 <b>引擎：经典 / ML</b> 可切换。ML = 1.9MB 神经网络找框（首次加载约 3.5MB，全在本机跑，不上传），
-     「置信」是它的把握度；经典 = 纯几何启发式。切换后点「全部重跑」生效。
-     <b>切引擎会自动清空上一轮的标签/备注/判定</b>（基准保留）—— 不换引擎就沿用。<br>
-  ⑦ 卡把整幅画面拍满（照片本身就是一张卡）时，标 <b>整图即卡</b>，直接整图 + 圆角输出、不跑检测。<br>
-  ⑧ <b>同图多卡</b>：一张照片里躺着两张卡（身份证压着银行卡）时，ML 会拆成多条记录，徽标显示
-     <b>同图 2 卡 · 第 1</b>。同框的<b>银行卡/社保卡会被自动折叠</b>（判据：满版彩卡，或人像印在左侧的社保卡），
-     不进列表、不进统计、不参与导出；顶栏「已剔除 N 张」可展开核对，判错的条目里点 <b>这是身份证</b> 一键救回。<br>
-  ⑨ <b>面别自动预填</b>：人像面 / 国徽面按版面墨迹密度判，判不准就留「面别待定」，判错直接点按钮覆盖。
+
+<main>
+  <div class="quickbar">
+    <button class="btn primary" id="btnCam">
+      <svg id="camIco" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="3.6"/></svg>
+      <span class="t" id="camT">拍照</span>
+    </button>
+    <button class="btn" id="btnAdd">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 16l-4.5-4.5L6 22"/></svg>
+      <span class="t" id="addT">相册</span>
+    </button>
+    <button class="btn" id="btnPaste" title="网页没有权限直接读微信聊天记录（只有小程序有），所以要用复制：在微信里右键/长按图片→复制，回到这里点本按钮或直接 Ctrl+V">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+      <span class="t">微信图</span>
+    </button>
+  </div>
+  <input type="file" id="file" accept="image/*" multiple hidden>
+  <!-- capture 让手机直接开系统相机：原生相机画质远高于页面内取景抓帧，
+       裁出来的卡面文字才够清楚。桌面浏览器会忽略 capture，退化为选文件。 -->
+  <input type="file" id="cam" accept="image/*" capture="environment" hidden>
+
+  <div class="layout">
+
+    <!-- 左：A4 版面 -->
+    <div class="colL">
+      <div class="paper" id="paper">
+        <canvas id="cvPrev"></canvas>
+        <div class="ph" id="ph">
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+            <rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/>
+            <path d="M3 17l4.5-4.5L12 17l3-3 6 6"/>
+          </svg>
+          <div>还没有照片<br><span id="emptySub" style="font-size:12px">人像面 + 国徽面各拍一张</span></div>
+        </div>
+      </div>
+      <div class="tip">
+        <span id="tipCamLine"><b>拍摄</b>卡放平、占满画面、避开反光，正反各一张。<br></span>
+        <span id="tipScanLine" hidden><b>扫描件</b>让扫描仪输出 JPG/PNG（300dpi、卡摆正），PDF/TIFF 网页读不了。<br></span>
+        <b>打印</b>选「实际大小 100%」，关掉「适应页面」，印完量卡面应为 <b class="nw">85.6 × 54 mm</b>。
+      </div>
+    </div>
+
+    <!-- 右：卡片列表与选项开关（参数在顶栏齿轮的设置弹层里） -->
+    <div class="colR">
+      <div class="sechd"><b>照片</b><span id="cnt">0 / 2</span><span class="ln"></span></div>
+      <div id="cards"></div>
+
+      <div class="sechd" style="margin-top:16px"><b>选项</b><span class="ln"></span></div>
+      <div class="opt">
+        <div class="row">
+          <div>
+            <div class="lab">用途水印</div>
+            <div class="desc">斜向平铺防挪用；文字内容在「设置」里改</div>
+          </div>
+          <label class="sw"><input type="checkbox" id="ckWm"><i></i></label>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">去阴影</div>
+            <div class="desc">拍照时的阴影、光照不匀会抹平，卡面亮度拉齐</div>
+          </div>
+          <label class="sw"><input type="checkbox" id="ckSh" checked><i></i></label>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">自动白平衡</div>
+            <div class="desc">暖黄灯光、冷蓝光下把白底拉回中性，只去色温</div>
+          </div>
+          <label class="sw"><input type="checkbox" id="ckWb" checked><i></i></label>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">裁剪辅助线</div>
+            <div class="desc">卡面四周画细虚线，方便裁切</div>
+          </div>
+          <label class="sw"><input type="checkbox" id="ckCut"><i></i></label>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">高对比度</div>
+            <div class="desc">底纹调白、文字压黑，卡外加一层投影</div>
+          </div>
+          <label class="sw"><input type="checkbox" id="ckHc"><i></i></label>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- 设置弹层：开关在页面「选项」区，这里放它们的参数与文件名系统（id 不变，handler 照旧） -->
+<div id="sheet">
+  <div class="shBg" id="shBg"></div>
+  <div class="shPanel">
+    <div class="shHead"><b>设置</b><button class="done" id="shClose">完成</button></div>
+      <div class="opt">
+        <div id="wmBox">
+          <div class="row"><div class="lab">水印文字</div></div>
+          <input class="wmtext" id="wmText" maxlength="40" value="仅供办理业务使用，他用无效">
+        </div>
+      </div>
+
+      <div class="opt" style="margin-top:12px">
+        <div class="row">
+          <div>
+            <div class="lab">保存文件名</div>
+            <div class="desc">点下方标签插入到模板里，顺序随意；留空恢复默认「身份证-时间」</div>
+          </div>
+        </div>
+        <div class="row"><input class="wmtext" id="fnTpl" value="身份证-{时间}"></div>
+        <div class="row" id="fnTags" style="flex-wrap:wrap;gap:8px"></div>
+        <div class="row">
+          <div>
+            <div class="lab">固定文字</div>
+            <div class="desc">「{固定文字}」标签展开的内容</div>
+          </div>
+          <input class="wmtext" id="fnFix" style="width:150px" placeholder="如：张三体检表">
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">序号起始</div>
+            <div class="desc">每导入一张新人像面 +1；同一人正反面同号</div>
+          </div>
+          <input class="wmtext" id="fnSeq" type="number" min="1" value="1" style="width:76px">
+        </div>
+        <div class="row"><div class="desc" id="fnPrev" style="word-break:break-all"></div></div>
+      </div>
+
+      <div class="opt" style="margin-top:12px">
+        <div class="row">
+          <div>
+            <div class="lab">联网 OCR</div>
+            <div class="desc">百度通用文字识别，供文件名标签用。只上传模板里用到字段的区域小图（如只用姓名就只传姓名那一行），整卡与人像照片不外传</div>
+          </div>
+          <label class="sw"><input type="checkbox" id="ckOcr"><i></i></label>
+        </div>
+        <div class="row">
+          <div><div class="lab">API Key</div></div>
+          <input class="wmtext" id="ocrKey" type="password" style="width:150px" autocomplete="off">
+        </div>
+        <div class="row">
+          <div><div class="lab">Secret Key</div></div>
+          <input class="wmtext" id="ocrSecret" type="password" style="width:150px" autocomplete="off">
+        </div>
+        <div class="row">
+          <div class="desc">取 key：百度智能云 console.bce.baidu.com → 产品「文字识别」→ 应用列表 → 创建应用（勾选通用文字识别）→ 得 API Key / Secret Key。个人认证每月有免费额度，key 只存本机。上传的只有字段小条图，不是整卡。</div>
+        </div>
+      </div>
+  </div>
 </div>
 
-<section id="ask">
-  <div class="hd">❓ 需要你确认的几件事（点一下即可，会随报告一起回传给我）</div>
-  <div class="rows" id="askRows"></div>
-</section>
+<footer>
+  <div class="acts">
+    <button class="btn primary" id="btnPdf" disabled>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      <span class="t">保存 PDF</span>
+    </button>
+    <button class="btn" id="btnImg" disabled>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg>
+      <span class="t">保存图片</span>
+    </button>
+    <button class="btn" id="btnPrint" disabled>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      <span class="t">打印</span>
+    </button>
+  </div>
+</footer>
 
-<div id="drop">
-  <div class="big">把身份证照片拖到这里，或点击选择</div>
-  <div class="sm">支持多张 · 所有处理都在你本机浏览器完成，图片不会上传到任何服务器</div>
-</div>
-
-<main id="list"></main>
 <div id="toast"></div>
+<div id="busy"><div class="spin"></div><div id="busyTxt">处理中…</div></div>
+<div id="printArea"><img id="printImg" alt=""></div>
+<div id="fs">
+  <img id="fsImg" alt="">
+  <div class="fsbar">
+    <button class="fsbtn" id="fsCopy" type="button">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+      </svg>复制图片
+    </button>
+  </div>
+  <div class="fshint">点空白处关闭</div>
+</div>
 
 <script>
-/* ================= 全局状态 ================= */
-const QS = [
-  {id:"q_flip",  t:"这批原图里，有没有整张倒着拍的（需要整体转 180°）？",
-   opts:["没有","有，少量","有，不少"]},
-  {id:"q_side",  t:"要不要我自动判断「人像面 / 国徽面」并排序？",
-   opts:["要，自动排","不用，我手动标","暂不需要"]},
-  {id:"q_dual",  t:"出现两张卡的图，哪种更多？",
-   opts:["叠放（压在一起）","并排","两种都有"]},
-  {id:"q_use",   t:"输出用途 / 版式？",
-   opts:["A4 拼版打印","6 寸相纸","只要单张卡面图"]},
-  {id:"q_wb",    t:"白平衡的要求？",
-   opts:["保持原色，只轻纠","可以更白净些","不要动颜色"]},
-  {id:"q_ocr",   t:"OCR 命名里有效期用哪种格式？",
-   opts:["2035.05.20","20350520","长期"]}
-];
-const TAGS = ["没检出","切歪/缺边","带背景残留","倒置180°","需转90°","竖卡方向错",
-  "多卡未拆","叠卡未剔除","白平衡过曝","其他"];
-const LS="idcard_score_v2";
-let state={q:{},items:{}};
-let CV_OK=false;
-const fileEl=document.getElementById("file");
-const listEl=document.getElementById("list");
-
-/* ================= 持久化 ================= */
-function save(){ try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){} }
-function load(){ try{const s=localStorage.getItem(LS); if(s) state=JSON.parse(s)}catch(e){} }
-function toast(m){const t=document.getElementById("toast");t.textContent=m;
-  t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),2800);}
-
-/* ================= 问答区 ================= */
-function renderAsk(){
-  const box=document.getElementById("askRows"); box.innerHTML="";
-  QS.forEach(q=>{
-    const d=document.createElement("div"); d.className="q";
-    d.innerHTML=`<span class="qt">${q.t}</span><span class="opts"></span>`;
-    const ops=d.querySelector(".opts");
-    q.opts.forEach(o=>{
-      const b=document.createElement("span"); b.className="opt"; b.textContent=o;
-      if(state.q[q.id]===o) b.classList.add("sel");
-      b.onclick=()=>{
-        state.q[q.id] = state.q[q.id]===o ? "" : o;
-        ops.querySelectorAll(".opt").forEach(x=>x.classList.remove("sel"));
-        if(state.q[q.id]) b.classList.add("sel");
-        save();
-      };
-      ops.appendChild(b);
-    });
-    box.appendChild(d);
-  });
-}
-
-/* ================= OpenCV 加载 ================= */
-function loadCV(){
-  return new Promise((res,rej)=>{
-    const s=document.createElement("script");
-    s.src="vendor/opencv.js";
-    s.onload=async()=>{
-      try{
-        let c=window.cv;
-        if(c&&typeof c.then==="function"){ c=await c; window.cv=c; }
-        if(c&&c.Mat) return res();
-        if(c&&c.onRuntimeInitialized){ c.onRuntimeInitialized=()=>res(); return; }
-        const t=setInterval(()=>{ if(window.cv&&window.cv.Mat){clearInterval(t);res();} },150);
-        setTimeout(()=>{clearInterval(t); (window.cv&&window.cv.Mat)?res():rej(new Error("timeout"))},90000);
-      }catch(e){ rej(e); }
-    };
-    s.onerror=()=>rej(new Error("load"));
-    document.head.appendChild(s);
-  });
-}
-
 /* ================= 几何工具 ================= */
 function orderPts(p){
   const s=p.map(a=>a[0]+a[1]), d=p.map(a=>a[1]-a[0]);
@@ -479,7 +688,7 @@ function detect(canvas){
 /* ================= ML 检测（DocCornerNet LEAN 1.9MB，懒加载） =================
    模型只管"框在哪"：输入拉成 224×224（不 letterbox），输出 4 角归一化坐标 + 置信度。
    方向/正倒仍由本页原有判据与人工兜底负责，模型不参与。 */
-let ENGINE = (localStorage.getItem("engine") === "ml") ? "ml" : "classic";
+let ENGINE = "ml";   // 新界面不给切引擎：ML 为主，失手自动回退经典
 let _scanicP = null;
 function loadScanic(){
   if(!_scanicP) _scanicP = import("./ml/scanic.js").catch(e=>{ _scanicP=null; throw e; });
@@ -505,7 +714,7 @@ async function detectML(canvas){
 // 统一入口：按当前引擎取框，ML 失手则回退经典，并把实际用的引擎记在返回里
 // 自动收紧默认关闭：实测它修不了那 2px 的"裁多了"，却会把 5 张好图咬掉（20/20→15/20）。
 // 代码留着，加 ?tight=1 可以开出来继续试验。
-let TIGHTEN = /[?&]tight=1/.test(location.search);
+let TIGHTEN = false;  // 实测会咬掉卡边（20/20→15/20），保持关闭
 async function detectAny(canvas){
   if(ENGINE==="ml"){
     const wc=wholeCard(canvas);                        // 卡拍满整幅 → 整图就是卡，不必找框
@@ -861,16 +1070,21 @@ function warpCanvas(rec,quad,isVert){
       .getImageData(0,0,sw,sh).data);
   const sd=rec._sd;
   const out=ctx.createImageData(W,H),od=out.data;
-  const qpx=quad.map(p=>[Math.min(sw-1,Math.max(0,p[0]*sw)),
-                         Math.min(sh-1,Math.max(0,p[1]*sh))]);   // 归一化 -> 源画布像素（越界夹紧，避免黑边）
+  // 归一化 [0,1] 必须乘 (sw-1)，不能乘 sw —— 乘 sw 时 p=1 映射到 sw 正好越界，
+  // 输出会带一条纯黑的底边和右边（实测 y=H-1 / x=W-1 全是 0,0,0）。
+  // 这条黑边会把 darkRowY 的"最强暗行"直接吸到画布边缘，导致朝向判反。
+  const qpx=quad.map(p=>[Math.min(sw-1,Math.max(0,p[0]*(sw-1))),
+                         Math.min(sh-1,Math.max(0,p[1]*(sh-1)))]);   // 归一化 -> 源画布像素（越界夹紧，避免黑边）
   const H2=solveH([[0,0],[W-1,0],[W-1,H-1],[0,H-1]],qpx);
   if(!H2) return cv2;
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){
     const dn=H2[6]*x+H2[7]*y+H2[8];
     const sx=(H2[0]*x+H2[1]*y+H2[2])/dn, sy=(H2[3]*x+H2[4]*y+H2[5])/dn;
     let r=0,g=0,bl=0;
-    if(sx>=0&&sy>=0&&sx<sw-1&&sy<sh-1){
-      const x0=sx|0,y0=sy|0,fx=sx-x0,fy=sy-y0;
+    if(sx>=0&&sy>=0&&sx<=sw-1&&sy<=sh-1){
+      // 双线性要读 x0+1：最外一像素用邻近复制，别让 fx 越界也别留黑边
+      const x0=Math.min(sw-2,Math.max(0,Math.floor(sx))),y0=Math.min(sh-2,Math.max(0,Math.floor(sy)));
+      const fx=Math.min(1,Math.max(0,sx-x0)),fy=Math.min(1,Math.max(0,sy-y0));
       const i00=(y0*sw+x0)*4,i10=i00+4,i01=i00+sw*4,i11=i01+4;
       const w00=(1-fx)*(1-fy),w10=fx*(1-fy),w01=(1-fx)*fy,w11=fx*fy;
       r=sd[i00]*w00+sd[i10]*w10+sd[i01]*w01+sd[i11]*w11;
@@ -898,6 +1112,245 @@ function roundMask(ctx,W,H,r){
   ctx.closePath();
   ctx.fillStyle="#000";ctx.fill();
   ctx.globalCompositeOperation="source-over";
+}
+
+/* ===== 自动白平衡（亮部灰世界，保守） =====
+   身份证卡面 55~65% 是白底，而白底就是画面里最亮的那部分 —— 所以只拿「亮度前 20%」的像素
+   做灰世界估计，等于只让白底投票，国徽/人像/印章全在暗端进不来。
+   为什么不用「低饱和像素取均值」：偏色越重，低饱和像素越少，实测暖偏 16% 的图上只剩 2.3%，
+   恰恰在最需要校正时跳过 —— 逻辑反了。亮部占比由白底面积保证，不受偏色影响。
+   增益限幅 ±20%：只去色温，不动饱和度与对比度。实测中性图的增益到不了边界，放宽不影响它。
+   返回 null 表示「不需要校正」，调用方直接用原图，省一份内存。 */
+const WB_CAP=0.20;      // 增益上限 ±20%
+const WB_LIT=0.80;      // 亮度分位：前 20% 视为白底
+/* 只估增益，不改像素 —— 返回 [gR,gG,gB]，估不出来返回 null。
+   为什么「估」和「应用」要拆开：去阴影把每处纸白都归一到 255，阴影区被提亮后也挤进
+   「亮度前 20%」，把灰世界的估计稀释成 gain≈1（实测 [1.016,0.992,0.992]）——
+   于是去阴影一开，白平衡开关就变成摆设、色偏照样留着。
+   所以增益永远在**原始图**上估，再乘到平场后的图上：像素顺序仍是 去阴影 → 白平衡。 */
+function wbGain(src){
+  const W=src.width,H=src.height;
+  const d=src.getContext("2d",{willReadFrequently:true}).getImageData(0,0,W,H).data;
+  // 第一遍：亮度直方图，定"白底"门槛
+  const hL=new Uint32Array(256); let n=0;
+  for(let i=0;i<d.length;i+=4){
+    if(d[i+3]<200) continue;                 // 圆角外透明像素不算
+    hL[(d[i]*77+d[i+1]*150+d[i+2]*29)>>8]++; n++;
+  }
+  if(n<W*H*0.06) return null;
+  const want=n*WB_LIT; let acc=0, thr=255;
+  for(let k=0;k<256;k++){ acc+=hL[k]; if(acc>=want){ thr=k; break; } }
+  // 第二遍：白底像素的三通道均值
+  let sr=0,sg=0,sb=0,m=0;
+  for(let i=0;i<d.length;i+=4){
+    if(d[i+3]<200) continue;
+    if(((d[i]*77+d[i+1]*150+d[i+2]*29)>>8)<thr) continue;
+    sr+=d[i]; sg+=d[i+1]; sb+=d[i+2]; m++;
+  }
+  if(m<n*0.05) return null;                  // 亮部太少（几乎全暗的图），不敢估
+  const mr=sr/m, mg=sg/m, mb=sb/m, anchor=(mr+mg+mb)/3;
+  const cl=v=>Math.min(1+WB_CAP,Math.max(1-WB_CAP,v));
+  return [cl(anchor/mr),cl(anchor/mg),cl(anchor/mb)];
+}
+
+/* 把增益乘到某一版像素上（可以是原图，也可以是平场后的图）。
+   增益≈1 或估不出来就返回 null，调用方直接用上游，省一份内存。 */
+function applyGain(src, gain){
+  if(!gain) return null;
+  if(Math.abs(gain[0]-1)<0.02&&Math.abs(gain[1]-1)<0.02&&Math.abs(gain[2]-1)<0.02) return null;  // 已经中性
+  const W=src.width,H=src.height;
+  const img=src.getContext("2d",{willReadFrequently:true}).getImageData(0,0,W,H), d=img.data;
+  for(let i=0;i<d.length;i+=4){
+    d[i]  =Math.min(255,d[i]  *gain[0]);
+    d[i+1]=Math.min(255,d[i+1]*gain[1]);
+    d[i+2]=Math.min(255,d[i+2]*gain[2]);
+  }
+  const out=document.createElement("canvas"); out.width=W; out.height=H;
+  out.getContext("2d").putImageData(img,0,0);
+  return out;
+}
+
+/* ===== 平场去阴影：估出「这一处本该多白」，再除掉 =====
+   阴影是乘性的：像素 = 卡面反射率 × 该处光照。估出局部光照（用局部最亮值近似）再逐像素除回去，
+   光斑、阴影、半边暗就一起消失。
+   三通道乘同一个增益 → 色相一点不动（国徽红还是红、肤色还是肤色、黑衣服还是黑）。
+   对本来就均匀的扫描件局部纸白≈255、增益≈1，等于没动，所以可以默认开。 */
+function boxMean(a, W, H, r){
+  // 积分图 + 滑动窗口均值，O(1)/像素
+  const ii = new Float64Array((W+1)*(H+1));
+  for (let y=0; y<H; y++){
+    let rs = 0;
+    const row=(y+1)*(W+1), prev=y*(W+1), base=y*W;
+    for (let x=0; x<W; x++){
+      rs += a[base+x];
+      ii[row+x+1] = ii[prev+x+1] + rs;
+    }
+  }
+  const out = new Float64Array(W*H);
+  for (let y=0; y<H; y++){
+    const y0 = y-r<0?0:y-r, y1 = y+r>=H?H-1:y+r;
+    const r0 = y0*(W+1), r1 = (y1+1)*(W+1), base=y*W;
+    const invH = 1/(y1-y0+1);
+    for (let x=0; x<W; x++){
+      const x0 = x-r<0?0:x-r, x1 = x+r>=W?W-1:x+r;
+      const s = ii[r1+x1+1] - ii[r0+x1+1] - ii[r1+x0] + ii[r0+x0];
+      out[base+x] = s * invH / (x1-x0+1);
+    }
+  }
+  return out;
+}
+
+/* 加权箱式均值：权重为 0 的像素不参与 —— 圆角外的透明区不能把「纸白」估高，
+   否则卡边缘一圈估出来接近 255、增益≈1，边缘就会留一道脏边。 */
+function boxMeanW(sig, wt, W, H, r){
+  const n=W*H;
+  const iiS=new Float64Array((W+1)*(H+1)), iiW=new Float64Array((W+1)*(H+1));
+  for (let y=0;y<H;y++){
+    let rs=0, rw=0;
+    const row=(y+1)*(W+1), prev=y*(W+1), base=y*W;
+    for (let x=0;x<W;x++){
+      const k=base+x;
+      rs += sig[k]*wt[k]; rw += wt[k];
+      iiS[row+x+1] = iiS[prev+x+1] + rs;
+      iiW[row+x+1] = iiW[prev+x+1] + rw;
+    }
+  }
+  const out=new Float64Array(n);
+  for (let y=0;y<H;y++){
+    const y0 = y-r<0?0:y-r, y1 = y+r>=H?H-1:y+r;
+    const r0 = y0*(W+1), r1 = (y1+1)*(W+1), base=y*W;
+    for (let x=0;x<W;x++){
+      const x0 = x-r<0?0:x-r, x1 = x+r>=W?W-1:x+r;
+      const s = iiS[r1+x1+1] - iiS[r0+x1+1] - iiS[r1+x0] + iiS[r0+x0];
+      const w = iiW[r1+x1+1] - iiW[r0+x1+1] - iiW[r1+x0] + iiW[r0+x0];
+      out[base+x] = w>1e-6 ? s/w : 255;
+    }
+  }
+  return out;
+}
+
+/* 局部纸白：亮度取 6 次方做箱式均值再开 6 次方 —— 近似滑动最大值，
+   但不会被孤立高光（反光点）带跑；再抹一遍去掉块状痕迹。
+   窗口取卡宽/25（1011 宽 → 41px）：比字大得多、比阴影小得多，正好只留下光照。 */
+function paperWhite(Y, WT, W, H){
+  const n = W*H, r = Math.max(3, Math.round(W/25));
+  const p = new Float64Array(n);
+  for (let i=0;i<n;i++){ const y=Y[i]/255, y2=y*y; p[i]=y2*y2*y2; }
+  const m = boxMeanW(p, WT, W, H, r);
+  for (let i=0;i<n;i++) m[i] = Math.pow(m[i], 1/6) * 255;
+  return boxMeanW(m, WT, W, H, Math.max(2, r>>1));
+}
+
+/* 一次遍历取出亮度、饱和度与有效掩码；圆角外的透明像素亮度按纸白(255)算，权重记 0 */
+function lumSat(d, n){
+  const Y = new Float64Array(n), SAT = new Float32Array(n), WT = new Float32Array(n);
+  let valid = 0;
+  for (let p=0,i=0; p<n; p++,i+=4){
+    if (d[i+3]<200){ Y[p]=255; continue; }
+    const r=d[i], g=d[i+1], b=d[i+2];
+    Y[p] = 0.299*r + 0.587*g + 0.114*b;
+    const mx = r>g?(r>b?r:b):(g>b?g:b), mn = r<g?(r<b?r:b):(g<b?g:b);
+    SAT[p] = mx>8 ? (mx-mn)/mx : 0;
+    WT[p] = 1;
+    valid++;
+  }
+  return {Y, SAT, WT, valid};
+}
+
+const SH_CAP=[0.55, 2.20];       // 增益上下限：防止某处纸白估得极低时把噪点放大到爆
+function shCopy(src){
+  const W=src.width, H=src.height, n=W*H;
+  const sc=src.getContext("2d",{willReadFrequently:true});
+  const img=sc.getImageData(0,0,W,H), d=img.data;
+  const {Y, WT, valid}=lumSat(d,n);
+  if (valid < n*0.2) return null;
+  const Wp = paperWhite(Y, WT, W, H);
+  let touched = 0;
+  for (let p=0,i=0; p<n; p++,i+=4){
+    if (d[i+3]<200) continue;
+    let g = 255 / Math.max(Wp[p], 1);
+    if (g<SH_CAP[0]) g=SH_CAP[0]; else if (g>SH_CAP[1]) g=SH_CAP[1];
+    if (g>1.02 || g<0.98) touched++;
+    d[i]  =Math.min(255, d[i]  *g);
+    d[i+1]=Math.min(255, d[i+1]*g);
+    d[i+2]=Math.min(255, d[i+2]*g);
+  }
+  if (touched < n*0.02) return null;        // 本来就很匀，不折腾，省一份内存
+  const out=document.createElement("canvas"); out.width=W; out.height=H;
+  out.getContext("2d").putImageData(img,0,0);
+  return out;
+}
+
+/* ===== 白底增强：底纹推纯白，人像与国徽原样保留 =====
+   走过的弯路（都实测过，别再回头）：
+   · 只做 levels 全局拉伸 → 人像高光跟着白，且深浅不一的卡效果差异大；
+   · 只按饱和度去色 → 底纹与人像的饱和度区间完全重叠（底纹 P50 0.211 / 人像 0.179），
+     任何阈值都同时命中两者；
+   · Sauvola 局部阈值 → 「底纹浅+文字也浅」的卡上阈值落到 0.66m，浅笔画被推掉。
+   现在：局部纸白归一化 → 亮度超过"纸白-20"才漂白 → 混合到纯白（去色+提亮一次完成）。
+   人像面外还叠一层 guard：把人像本体抠出来一个像素都不动，人像周围的底纹照样漂白。
+   卡边投影**不在像素里做**，交给 paintSheet —— 只有那里知道卡片贴在纸上的真实位置。 */
+const HC_THR=235, HC_SOFT=6, HC_SAT=0.45, HC_SPAN=0.16;
+
+/* 人像是固定版式（实测 5 张内容框 x 0.560~0.565 / 0.930~0.938，y 0.154~0.180 / 0.879~0.898）。
+   在框内把人像本体抠出来：比框内纸白暗 22 级、或明显彩色的像素算人像，
+   再用大核均值填洞（脸的高光、白衬衫会被补回来），最后羽化成软掩码。
+   框内没内容（std 低、暗像素少）就当不是人像，不保护 —— 防止面别判错时留一块白斑。 */
+function faceGuard(Y, SAT, W, H){
+  const x0=Math.round(0.545*W), x1=Math.round(0.955*W);
+  const y0=Math.round(0.12*H),  y1=Math.round(0.93*H);
+  const hL=new Uint32Array(256);
+  let cnt=0, s1=0, s2=0;
+  for (let y=y0;y<y1;y++){
+    const b=y*W;
+    for (let x=x0;x<x1;x++){
+      const v=Y[b+x]|0, k=v>255?255:v;
+      hL[k]++; cnt++; s1+=k; s2+=k*k;
+    }
+  }
+  if (cnt<1000) return null;
+  const mean=s1/cnt, std=Math.sqrt(Math.max(0, s2/cnt - mean*mean));
+  let dark=0; for (let v=0;v<130;v++) dark+=hL[v];
+  if (std<=18 || dark/cnt<=0.03) return null;
+  let acc=0, p90=255; const want=cnt*0.9;
+  for (let v=0;v<256;v++){ acc+=hL[v]; if (acc>=want){ p90=v; break; } }
+  const cand=new Float64Array(W*H);
+  for (let y=y0;y<y1;y++){
+    const b=y*W;
+    for (let x=x0;x<x1;x++){
+      const i=b+x;
+      cand[i] = (Y[i] < p90-22 || SAT[i] > 0.32) ? 1 : 0;
+    }
+  }
+  const filled = boxMean(cand, W, H, 25);            // ≈ 膨胀 + 填洞
+  for (let i=0;i<filled.length;i++) filled[i] = filled[i]>0.45 ? 1 : 0;
+  return boxMean(filled, W, H, 9);                   // 羽化，避免硬边
+}
+
+function hcCopy(src, side){
+  const W=src.width, H=src.height, n=W*H;
+  const sc=src.getContext("2d",{willReadFrequently:true});
+  const img=sc.getImageData(0,0,W,H), d=img.data;
+  const {Y, SAT, WT, valid}=lumSat(d,n);
+  if (valid < n*0.2) return null;
+  const Wp = paperWhite(Y, WT, W, H);
+  const guard = side==="人像面" ? faceGuard(Y, SAT, W, H) : null;
+  for (let p=0,i=0; p<n; p++,i+=4){
+    if (d[i+3]<200) continue;
+    let a = (Y[p]*255/Math.max(Wp[p],1) - HC_THR) / HC_SOFT;
+    if (a<=0) continue; if (a>1) a=1;
+    let sw = (HC_SAT - SAT[p]) / HC_SPAN;            // 越灰越漂白；红章/国徽/肤色不碰
+    if (sw<=0) continue; if (sw>1) sw=1;
+    a *= sw;
+    if (guard) a *= 1-guard[p];
+    if (a<=0.002) continue;
+    d[i]  += (255-d[i]  )*a;
+    d[i+1]+= (255-d[i+1])*a;
+    d[i+2]+= (255-d[i+2])*a;
+  }
+  const out=document.createElement("canvas"); out.width=W; out.height=H;
+  out.getContext("2d").putImageData(img,0,0);
+  return out;
 }
 
 
@@ -947,19 +1400,59 @@ function scanSegs(cv,y0,y1){
   }
   return best;
 }
-// 竖版 638x1011 -> 两个方向各转 90°，谁"底部段落多"谁就是正立
-function uprightVertical(cv,force){
-  const a=rot90(cv,true), b=rot90(cv,false);
-  if(force===1) return {cv:a,rot:1,auto:false};
-  if(force===-1) return {cv:b,rot:-1,auto:false};
-  // 正立时：底部是 18 位号码（切出十几段），顶部只是"姓名"行（几段）。
-  // 只看底部会被"住址多行文字"骗到，改用 底部段数 - 顶部段数 的差。
-  const botA=scanSegs(a,0.78,0.99), botB=scanSegs(b,0.78,0.99);
-  const topA=scanSegs(a,0.10,0.34), topB=scanSegs(b,0.10,0.34);
-  const sa=botA-0.7*topA, sb=botB-0.7*topB;
-  const pickA=sa>=sb, hi=Math.max(botA,botB), lo=Math.min(botA,botB);
-  return {cv:pickA?a:b, rot:pickA?1:-1, auto:true,
-          unsure:(hi<10 || hi<lo*1.6 || Math.abs(sa-sb)<2)};
+/* 卡面转正（90° 侧躺 + 180° 倒置统一走这里）
+   两条判据，天然互补 —— 单用任何一条都会漏：
+
+   ① segScore：底部暗段数 − 顶部暗段数。
+      人像面底部是 18 位号码，切出 20~40 段，正立 +12~+28、倒置 −12~−28，很硬。
+      但国徽面底部只有「签发机关 / 有效期限」两行，段数本来就少；
+      照片一糊（微信压缩、卡占画面小）正立只剩 +1~+11，全部挤到阈值内 → 漏转。
+   
+   ② darkRowY：全卡"暗像素最多的那一行"的 y 位置。
+      人像面是号码行，国徽面是签发机关行，不管多糊它都是全卡最密的一行。
+      实测退化图：正立 0.73~0.88、倒置 0.12~0.27，余量 0.23，比 segScore 稳得多。
+
+   策略：|segScore| ≥ 8 就用它（人像面必定命中；国徽面 9~11 的那几张是微弱但符号正确的
+   真信号，阈值设 12 会把它们推给下面那条不可靠的判据，实测正是这里判反的），
+   更弱时才退回 darkRowY（只在糊图上有主导权 —— 清晰图上顶部粗体大字暗像素更多，会骗人）。
+   回归：20 张卡 × 4 个方向 × 清晰/退化两档 = 160 个组合全对。 */
+const ORIENT_T = 8;
+function segScore(cv){ return scanSegs(cv,0.78,0.99) - scanSegs(cv,0.01,0.22); }
+function darkRowY(cv){
+  const W=cv.width,H=cv.height;
+  const d=cv.getContext("2d",{willReadFrequently:true}).getImageData(0,0,W,H).data;
+  const g=new Float32Array(W*H);
+  for(let i=0,p=0;i<W*H;i++,p+=4) g[i]=0.299*d[p]+0.587*d[p+1]+0.114*d[p+2];
+  let best=-1, by=0.5;
+  // 跳过最外 2 行：warp 的边界行即使夹紧了也可能被圆角遮罩挖掉一块，别让它当"最强暗行"
+  for(let y=2;y<H-2;y++){
+    const o=y*W;
+    let mean=0; for(let x=0;x<W;x++) mean+=g[o+x]; mean/=W;
+    const thr=mean*0.88;
+    let c=0;
+    for(let x=0;x<W;x++) if((g[o-W+x]+g[o+x]+g[o+W+x])/3<thr) c++;
+    if(c>best){ best=c; by=y/H; }
+  }
+  return by;
+}
+function orientScore(cv){
+  const d=segScore(cv);
+  if(Math.abs(d)>=ORIENT_T) return {dir:d>0?1:-1, how:"segs", v:Math.abs(d)/24};
+  const t=darkRowY(cv)-0.5;
+  if(Math.abs(t)>=0.08) return {dir:t>0?1:-1, how:"row", v:Math.abs(t)/0.3};
+  return {dir:0, how:"none", v:Math.abs(t)};
+}
+function autoUpright(cv){
+  let rot=0;
+  if(cv.height>cv.width){                 // 竖版 638×1011：两个方向各转一次择优
+    const a=rot90(cv,true), b=rot90(cv,false);
+    const oa=orientScore(a), ob=orientScore(b);
+    const rank=o=>(o.dir>0?2:o.dir<0?0:1)*10+Math.min(1,o.v);   // 明确正立 > 不明确 > 明确倒置
+    if(rank(oa)>=rank(ob)){ cv=a; rot=1; } else { cv=b; rot=3; }
+  }
+  const o=orientScore(cv);
+  if(o.dir<0){ cv=rotN(cv,2); rot=(rot+2)%4; }   // 倒置
+  return {cv,rot,unsure:o.dir===0,how:o.how};
 }
 
 /* ================= 多卡检测 =================
@@ -1015,7 +1508,7 @@ async function detectMLCards(canvas){
     const q=[[0,0],[1,0],[1,1],[0,1]];
     const g=geom(q.map(p=>[p[0]*W,p[1]*H]),W,H);
     return [{quad:q,metrics:{area:g.area,ar:g.ar,es:0,smean:0,sstd:0,gmean:0,score:1},
-             is_vertical:false,engine:"whole",whole:{iar:wc.iar,dist:wc.dist},tag:"whole"}];
+             is_vertical:H>W,engine:"whole",whole:{iar:wc.iar,dist:wc.dist},tag:"whole"}];
   }
   const cands=[];
   const full=await detectML(canvas);
@@ -1068,9 +1561,16 @@ function sideOf(cv){
   }
   if(!ntl||!nbr) return "";
   const a=tl/ntl, b=br/nbr;
-  // 阈值 0.06 不是随手取的：本批 20 张里，身份证 8 张人像面差 0.117~0.171、9 张国徽面 0.101~0.148；
-  // 而同框的银行卡（含工银社保联名卡）差值都在 0.001~0.058 —— 取 0.06 谁都不误标，
-  // 代价是差值 0.047 的那张国徽面留成"待定"（宁可留白，也别给银行卡贴错面别）。
+  /* ① 国徽面：国徽是左上一枚深色圆块。实测 10 张国徽面左上暗占比 0.255~0.315，
+     10 张人像面只有 0.046~0.085（左上只有"姓名"几行细字），空档宽到 0.17。
+     这条救的是「左右差 0.02~0.06」那类糊图 —— 只靠老判据会留成"待定"，
+     而作者截图里那种从别的页面缩下来的小卡正好落在这个带里（a=0.158）。 */
+  if(a>0.13) return "国徽面";
+  /* ② 人像面：人像在右上 + 18 位号码压底，右下暗占比显著高于左上（实测差 0.15~0.27） */
+  if(a<0.10 && b-a>0.08) return "人像面";
+  /* ③ 兜底：老判据。阈值 0.06 不是随手取的：本批 20 张里，身份证 8 张人像面差 0.117~0.171、
+     9 张国徽面 0.101~0.148；而同框的银行卡（含工银社保联名卡）差值都在 0.001~0.058 ——
+     取 0.06 谁都不误标，代价是差值 0.047 的那张国徽面留成"待定"（宁可留白，也别给银行卡贴错面别）。 */
   if(Math.abs(a-b)<0.06) return "";
   return a>b?"国徽面":"人像面";
 }
@@ -1136,707 +1636,806 @@ function cardKind(cv){
   return {notId, why, strong:+st_.toFixed(3), ldark:+ld.toFixed(3)};
 }
 
-/* ================= 渲染 ================= */
-const recs=[];
-window.__recs=recs;
-const pad2=n=>String(n).padStart(2,"0");
-const baseName=n=>String(n||"img").replace(/\.[^.]+$/,"");
-// 微信图名长得几乎一样（微信图片_2025…_64），光看全名反而分不清。
-// 这里按"同族"（前缀非数字部分相同，如 微信图片_ / ScreenShot_）分组，
-// 剪掉组内最长公共前缀，只留真正有辨识度那一段。
-function shortTag(name){
-  const b=baseName(name);
-  const k=s=>(s.match(/^[^\d]*/)||[""])[0];
-  const grp=recs.map(r=>baseName(r.name)).filter(s=>k(s)===k(b));
-  if(grp.length<2) return b;
-  let cp=0;
-  while(cp<grp[0].length){
-    const ch=grp[0][cp];
-    if(!grp.every(s=>s[cp]===ch)) break;
-    cp++;
+
+
+/* ============================================================
+   A4 版面：300 dpi 下 210×297mm = 2480×3508px
+   卡片 85.6×54mm = 1011×638px —— 与 warpCanvas 的输出完全一致，
+   所以拼版是原像素贴图，零重采样，打印出来就是原大。
+   ============================================================ */
+const DPI = 300;
+const MM = DPI / 25.4;                 // 11.811 px/mm
+const A4_W = Math.round(210 * MM);     // 2480
+const A4_H = Math.round(297 * MM);     // 3508
+const CARD_W = Math.round(85.6 * MM);  // 1011
+const CARD_H = Math.round(54 * MM);    // 638  ← 与 warpCanvas 一致
+const GAP_MM = 10;
+
+const $ = s => document.querySelector(s);
+/* 手机 / 桌面是两条完全不同的取图路径：
+   - 手机：<input capture> 直接拉起系统相机，原生相机有 HDR 和全分辨率，画质远高于页面内抓帧
+   - 桌面：capture 被浏览器忽略（静默退化成选文件），而且扫描仪走 TWAIN/WIA 驱动，
+     浏览器没有任何 API 能访问它（NPAPI/ActiveX 早已全部移除），只能选厂商软件导出的图片。
+   所以桌面端把这个入口改成「扫描」，并在提示里说明格式要求。
+   iPad 的 UA 伪装成 Macintosh，要靠 maxTouchPoints 认出来。 */
+const IS_IPAD = /macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+const IS_MOBILE = IS_IPAD || /android|iphone|ipod|mobile|harmonyos/i.test(navigator.userAgent);
+const cards = [];                      // {id, cv(1011×638), cvWb(可选中性版), side, srcName, kind}
+let uid = 0;
+/* 白平衡是「显示/输出」的选择，不改 cv 本身 —— 朝向与面别判据全在 cv 上算过，
+   这样开关切换不会让判据结果漂移，只是换一份像素去画。 */
+let SH = true;                         // 去阴影（平场校正），默认开：均匀图增益≈1，等于没动
+let WB = true;                         // 自动白平衡
+let HC = false;                        // 高对比度（底纹调白 + 卡边投影），默认关
+/* 像素来源四级：cv（原始）→ cvWb（白平衡）→ sh（去阴影）→ hc（白底增强）。
+   **白平衡必须排在去阴影之前**，这是实测出来的硬约束：
+   平场把阴影区按 1.6 倍提亮时三通道一起 clip 到 255，色偏信息在那一步就没了 ——
+   之后再估灰世界，只能估出 gain≈1（实测 [1.016,0.992,0.992]），开关等于摆设、色偏照样留着。
+   反过来先白平衡：色偏在 clip 之前就被校正，实测 R/B 0.806→0.971、1.061→0.996。
+   每一级都记「我是在哪一份上游算的」（wbFor / shFor / hcFor），上游一换就自动重算。 */
+const eff = c => {
+  // ① 白平衡（含 clip，必须在平场之前）
+  let base = c.cv;
+  if (WB && c.cv){
+    if (c.wbFor !== c.cv){ c.cvWb = applyGain(c.cv, (c.wbGain = wbGain(c.cv))); c.wbFor = c.cv; }
+    if (c.cvWb) base = c.cvWb;
   }
-  if(cp<4) return b;
-  const t=b.slice(cp);
-  return t||b;
-}
-// 双重命名：序号 + 原文件名，两边都写在文件名里，肉眼能对回列表
-// 一图多卡时再加 _c1/_c2，否则两条记录会撞名
-function outName(rec,st){
-  const s=String(rec.no).padStart(2,"0")+"_"+baseName(rec.name)
-    +(rec.cardCount>1?`_c${(rec.cardIdx|0)+1}`:"");
-  const tag=(st&&(st.rotQ||st.swap))?`_${(((st.rotQ|0)%4)+4)%4*90}${st.swap?"_swap":""}`:"";
-  return s+tag+".png";
-}
-function dlCanvas(cv,name){
-  cv.toBlob(b=>{
-    if(!b) return;
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(b); a.download=name;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(a.href),6000);
-  },"image/png");
-}
-function drawOrig(cvEl,rec,dragIdx,selIdx){
-  const src=rec.canvas, maxH=420, maxW=560;
-  const sc=Math.min(maxW/src.width, maxH/src.height, 1);
-  const w=Math.round(src.width*sc), h=Math.round(src.height*sc);
-  cvEl.width=w;cvEl.height=h;
-  const ctx=cvEl.getContext("2d");
-  ctx.drawImage(src,0,0,w,h);
-  // rec.quad 永远保留"自动结果"，显示/拖拽用 rec.cur，避免把金标准污染成 auto_quad
-  const qq=rec.cur||rec.quad;
-  if(!qq) return;
-  const pts=qq.map(p=>[p[0]*w,p[1]*h]);
-  ctx.lineWidth=2;ctx.strokeStyle="#4a9eff";ctx.beginPath();
-  pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
-  ctx.closePath();ctx.stroke();
-  ctx.fillStyle="#4a9eff22";ctx.fill();
-  pts.forEach((p,i)=>{
-    const out = p[0]<0||p[0]>w||p[1]<0||p[1]>h;
-    // 跑出画面的角：钉在边缘显示，颜色转红，并画一条虚线指向真实位置
-    const cx=Math.max(10,Math.min(w-10,p[0])), cy=Math.max(10,Math.min(h-10,p[1]));
-    const hl = (dragIdx===i||selIdx===i);
-    if(out){
+  // ② 去阴影
+  let cur = base;
+  if (SH){
+    if (c.shFor !== base){ c.sh = shCopy(base); c.shFor = base; }
+    if (c.sh) cur = c.sh;
+  }
+  // ③ 白底增强（人像面要带面别进去，guard 靠它决定保不保人像）
+  if (!HC) return cur;
+  if (c.hcFor !== cur || c.hcSide !== c.side){
+    c.hc = hcCopy(cur, c.side); c.hcFor = cur; c.hcSide = c.side;
+  }
+  return c.hc || cur;
+};
+
+/* ---------- 版面绘制（预览与导出共用） ---------- */
+function paintSheet(ctx, W, H, dpr){
+  const s = W / A4_W;
+  const cw = Math.round(CARD_W * s), ch = Math.round(CARD_H * s);
+  const gap = Math.round(GAP_MM * MM * s);
+  const x = Math.round((W - cw) / 2);
+
+  ctx.save();
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, W, H);
+
+  // 按面别排序：人像面在上，国徽面在下，未标注的排最后
+  const order = { "人像面": 0, "国徽面": 1, "": 2 };
+  const list = cards.slice().sort((a, b) => (order[a.side] ?? 2) - (order[b.side] ?? 2));
+
+  let ys = [];
+  if (list.length >= 2) {
+    const total = ch * 2 + gap;
+    const y0 = Math.round((H - total) / 2);
+    ys = [y0, y0 + ch + gap];
+  } else if (list.length === 1) {
+    ys = [Math.round((H - ch) / 2)];
+  }
+
+  list.forEach((c, i) => {
+    if (ys[i] === undefined) return;
+    const y = ys[i];
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    if (HC) {
+      // 高对比度：卡外一层柔和投影，让复印件上的卡从白纸里浮出来，边缘一眼能认。
+      // 半径按毫米给，预览与导出等比缩放（所见即所得）；预览太小就保底 1px，
+      // 否则 390 宽手机上 A4 只有 270px，投影半径算出来 0.6px 等于没有。
       ctx.save();
-      ctx.strokeStyle="#ff6b5e";ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
-      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(p[0],p[1]);ctx.stroke();
+      ctx.shadowColor = "rgba(0,0,0,0.20)";
+      ctx.shadowBlur = Math.max(1, 1.3 * MM * s);
+      ctx.shadowOffsetY = 0.45 * MM * s;
+      ctx.drawImage(eff(c), x, y, cw, ch);
+      ctx.restore();
+    } else {
+      ctx.drawImage(eff(c), x, y, cw, ch);
+    }
+    if (cutLines) {
+      ctx.save();
+      ctx.strokeStyle = "#c8ccd4";
+      ctx.lineWidth = Math.max(1, 0.25 * MM * s);
+      ctx.setLineDash([Math.max(2, 4 * s), Math.max(2, 3 * s)]);
+      ctx.strokeRect(x + 0.5, y + 0.5, cw - 1, ch - 1);
       ctx.restore();
     }
-    const rad = out ? 10 : (hl?9:6);
-    ctx.beginPath();ctx.arc(cx,cy,rad,0,7);
-    ctx.fillStyle = out?"#ff5a4c":(hl?"#ffd24a":"#4a9eff");ctx.fill();
-    ctx.strokeStyle = hl?"#fff":(out?"#fff":"#000");ctx.lineWidth = (hl||out)?2:1.5;ctx.stroke();
-    if(hl||out){
-      ctx.fillStyle = out?"#fff":"#111";
-      ctx.font="bold 11px ui-monospace,monospace";
-      ctx.textAlign="center";ctx.textBaseline="middle";
-      ctx.fillText(String(i+1),cx,cy+0.5);
-    }
   });
+
+  if (watermark) drawWatermark(ctx, W, H, s);
+  ctx.restore();
+  return { cw, ch, gap, x, ys };
 }
 
-function buildItem(rec){
-  const st=state.items[rec.id] || (state.items[rec.id]={verdict:"",tags:[],note:"",side:"",quad:null,manual:false});
-  if(!st.steps) st.steps=[];
-  if(!st.side && rec.autoSide) st.side=rec.autoSide;   // 面别预填，点过按钮就不再覆盖
-  const el=document.createElement("div");
-  el.className="item"+(rec.notId&&!st.keep?" nonid":"");
-  el.dataset.id=rec.id;
-  const m=rec.metrics||{};
-  // ML 引擎不产出 es（边缘支撑度），原来那套判据会把每张 ML 结果都判成"可疑"，纯属误伤
-  // ML 的卡形门控就是 ar<0.06，自动判据跟着收紧到 0.07，别再用经典引擎的 0.13
-  const isML = rec.engine==="ml"||rec.engine==="whole";
-  const auto = rec.fail?"fail":( isML
-    ? ( ((m.score===undefined?1:m.score)>=0.5 && m.area>=0.05 && m.area<=1.001 && m.ar<=0.07)?"ok":"warn")
-    : ( (m.es>=0.60&&m.area>=0.07&&m.area<=0.88&&m.ar<=0.13)?"ok":"warn") );
-  rec.auto=auto;
-  el.innerHTML=`
-   <div class="it-head">
-     <span class="idx">${pad2(rec.no)}</span>
-     <span class="badge ${rec.engine==="whole"?"b-whole":rec.engine==="ml"?"b-ok":rec.engine==="classic-fallback"?"b-warn":"b-unk"}" data-role="eng" title="本张实际使用的检测引擎">${
-        rec.engine==="whole"?"整图即卡":rec.engine==="ml"?"ML 1.9MB":rec.engine==="classic-fallback"?"ML→经典":"经典"}</span>
-     <span class="fname" title="${rec.name}">${rec.name}</span>
-     <span class="fbase" title="辨识段（各文件名公共前缀已省略）· 完整名：${rec.name}">${shortTag(rec.name)}</span>
-     <span class="badge ${auto==="ok"?"b-ok":auto==="fail"?"b-bad":"b-warn"}">${
-        auto==="ok"?"自动·可用":auto==="fail"?"自动·失败":"自动·可疑"}</span>
-     <span class="badge b-unk" data-role="gold">未存基准</span>
-     <span class="badge b-unk" data-role="vb">未审</span>
-     <div class="metrics">${
-       rec.engine==="whole"
-        ? `<span class="chip hi">整图 ${(m.area*100).toFixed(0)}%</span>
-           <span class="chip">比例偏差 ${(m.ar||0).toFixed(3)}</span>
-           <span class="chip">未跑检测</span>`
-        : rec.engine==="ml"
-        ? `<span class="chip hi">置信 ${(m.score||0).toFixed(3)}</span>
-           <span class="chip">面积 ${((m.area||0)*100).toFixed(0)}%</span>
-           <span class="chip">比例偏差 ${(m.ar||0).toFixed(3)}</span>`
-        : `<span class="chip">面积 ${((m.area||0)*100).toFixed(0)}%</span>
-           <span class="chip">比例偏差 ${(m.ar||0).toFixed(3)}</span>
-           <span class="chip ${m.es>0.6?"hi":""}">边缘 ${(m.es||0).toFixed(2)}</span>
-           <span class="chip">饱和 ${(m.smean||0).toFixed(2)}</span>`}
-       ${rec.cardCount>1?`<span class="chip hi">同图 ${rec.cardCount} 卡 · 第 ${rec.cardIdx+1}</span>`:""}
-       ${rec.notId?`<span class="chip bad">${st.keep?"已认作身份证":"非身份证"} · ${rec.kindWhy||""}</span>`:""}
-     </div>
-   </div>
-   <div class="body">
-     <div class="pane orig">
-       <span class="cap">原图 · 拖四角，或用下方箭头微调</span>
-       <canvas></canvas>
-       <div class="nudge">
-         <span class="csg">
-           <button class="cs on" data-c="0" title="选中 左上角">①</button><button class="cs" data-c="1" title="选中 右上角">②</button><button class="cs" data-c="2" title="选中 右下角">③</button><button class="cs" data-c="3" title="选中 左下角">④</button>
-         </span>
-         <span class="pad">
-           <button data-nudge="u" title="上移">↑</button>
-           <button data-nudge="l" title="左移">←</button>
-           <button data-nudge="d" title="下移">↓</button>
-           <button data-nudge="r" title="右移">→</button>
-         </span>
-         <span class="stp">
-           <button data-step="1" class="on">1px</button><button data-step="5">5px</button><button data-step="20">20px</button>
-         </span>
-         <button data-act="pullin" title="把跑到画面外的角一次性收回画面内">收回</button>
-       </div>
-     </div>
-     <div class="pane out"><span class="cap">矫正输出 <span data-role="dim"></span></span><canvas></canvas></div>
-   </div>
-   <div class="foot">
-     <div class="side">
-       <button data-s="人像面">人像面</button><button data-s="国徽面">国徽面</button>
-     </div>
-     <button data-v="ok">✓ 可用</button><button data-v="bad">✗ 有问题</button>
-     <div class="tags">${TAGS.map(t=>`<span class="tag" data-t="${t}">${t}</span>`).join("")}</div>
-     <input class="note" placeholder="备注">
-     <span class="rotgrp" title="任何一张卡都能手动转；转的只是方向，不改变框">
-       <button data-act="rotccw" title="逆时针 90°">↺ 90°</button>
-       <button data-act="rotcw" title="顺时针 90°">↻ 90°</button>
-       <button data-act="rot180" title="转 180°（自动转正方向选反时用这个）">180°</button>
-       <button data-act="resetrot" title="方向复位（0°）">复位</button>
-       <button data-act="swap" title="切换竖版/横版基准：框对了但画面被压扁、拉宽时点这个">竖⇄横</button>
-     </span>
-     <button data-act="gold" title="把当前框 + 方向存为人工基准（金标准，导出报告时带上）">存基准</button>
-     <button data-act="dl" title="下载这张矫正图，文件名 = 序号_原文件名.png">下载图</button>
-     ${rec.notId&&!st.keep?`<button data-act="keepid" title="判错了：这张其实是身份证，点一下放回列表并参与导出">这是身份证</button>`:""}
-     <button data-act="rerun">重跑</button>
-   </div>
-   <div class="steps" data-role="steps"></div>`;
-  listEl.appendChild(el);
+function drawWatermark(ctx, W, H, s){
+  const txt = (($("#wmText") && $("#wmText").value.trim()) || "仅供办理业务使用，他用无效");
+  const fs = Math.round(9 * MM * s);          // 字高约 9mm
+  ctx.save();
+  ctx.translate(W / 2, H / 2);
+  ctx.rotate(-Math.PI / 6);                    // -30°
+  ctx.font = `600 ${fs}px -apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif`;
+  ctx.fillStyle = "rgba(110,116,128,0.17)";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const tw = ctx.measureText(txt).width;
+  const stepX = tw + fs * 2.2;
+  const stepY = fs * 6.5;
+  // 覆盖旋转后的整个画幅
+  const R = Math.ceil(Math.hypot(W, H) / 2) + stepX;
+  for (let yy = -R; yy <= R; yy += stepY)
+    for (let xx = -R; xx <= R; xx += stepX)
+      ctx.fillText(txt, xx, yy);
+  ctx.restore();
+}
 
-  const cvO=el.querySelector(".orig canvas"), cvU=el.querySelector(".out canvas");
-  const bSwap=el.querySelector('[data-act="swap"]'), bReset=el.querySelector('[data-act="resetrot"]');
-  let sel=0, stepPx=1, rt=null;
-  const chips=[...el.querySelectorAll(".cs")];
-  function paint(hi){ rec.cur=q(); drawOrig(cvO,rec,hi==null?-1:hi,sel); }
-  function setSel(i){ sel=i; chips.forEach((c,k)=>c.classList.toggle("on",k===i)); paint(-1); }
-  function q(){ return st.quad||rec.quad; }
-  // 记录矫正步骤：AI 靠这串动作判断"哪类操作被反复用来救同一类图"
-  function log(s){
-    if(!st.steps) st.steps=[];
-    if(st.steps.length<60) st.steps.push(s);
-    if(st.gold && !s.startsWith("★")) st.goldDirty=true;   // 存过基准又改框 → 提示重存
-    const se=el.querySelector('[data-role="steps"]');
-    if(se) se.textContent=st.steps.join(" → ");
-    save();
+/* ---------- 预览 ---------- */
+let cutLines = false, watermark = false;
+function renderPreview(){
+  const paper = $("#paper");
+  const cv = $("#cvPrev");
+  const rect = paper.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  const W = Math.max(120, Math.round(rect.width * dpr));
+  const H = Math.round(W * A4_H / A4_W);
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  const ctx = cv.getContext("2d");
+  paintSheet(ctx, W, H, dpr);
+  $("#ph").style.display = cards.length ? "none" : "flex";
+  const has = cards.length > 0;
+  ["btnPdf", "btnImg", "btnPrint"].forEach(id => $("#" + id).disabled = !has);
+}
+
+/* ---------- 卡片列表 ---------- */
+function renderCards(){
+  const box = $("#cards");
+  box.innerHTML = "";
+  $("#cnt").textContent = `${cards.length} / 2`;
+  if (!cards.length) {
+    box.innerHTML = `<div style="font-size:12.5px;color:#9aa1ac;padding:6px 2px 2px">还没有照片。${IS_MOBILE ? "拍一张卡面，或从相册选。" : "扫一张卡面，或从图片导入。"}</div>`;
+    return;
   }
-  // 竖版基准 = 自动判断 XOR 手动切换
-  function effVert(){ return !!rec.is_vertical !== !!st.swap; }
-  function rotQ(){ return (((st.rotQ|0)%4)+4)%4; }
-  // 箭头微调：一次一步；拖动输出重算做 90ms 防抖，避免连点卡顿
-  function softRefresh(){ clearTimeout(rt); rt=setTimeout(()=>{refresh(true);save();},90); }
-  function nudge(dx,dy){
-    const qq=q(); if(!qq){ toast("这张还没框，先点「重跑」或拖角"); return; }
-    const arr=qq.map(p=>[...p]);
-    const wpx=rec.canvas.width, hpx=rec.canvas.height;
-    const x=Math.max(-0.08,Math.min(1.08,arr[sel][0]+dx*stepPx/wpx));
-    const y=Math.max(-0.08,Math.min(1.08,arr[sel][1]+dy*stepPx/hpx));
-    arr[sel]=[x,y];
-    st.quad=arr; st.manual=true; rec.cur=arr;
-    log(`nudge${sel+1}(${dx*stepPx},${dy*stepPx})`);
-    paint(-1); softRefresh();
-  }
-  function refresh(recalc){
-    paint(-1);
-    // 基准徽标
-    const gb=el.querySelector('[data-role="gold"]');
-    if(gb){
-      const stale=!!(st.gold&&st.goldDirty);
-      gb.className="badge "+(st.gold&&!stale?"b-gold":stale?"b-warn":"b-unk");
-      gb.textContent=st.gold?(stale?"基准已改·待重存":"基准已存"):"未存基准";
-    }
-    if(!q()){ el.querySelector('[data-role="dim"]').textContent="未检出"; return; }
-    const vert=effVert(), rq=rotQ();
-    let out=warpCanvas(rec,q(),vert), note="";
-    if(vert){
-      const uu=uprightVertical(out,0);
-      out=uu.cv;
-      note = uu.unsure?" · 方向待确认":" · 已转正";
-    }
-    if(rq) out=rotN(out,rq);          // 手动旋转叠加在自动结果之上
-    cvU.width=out.width;cvU.height=out.height;
-    cvU.getContext("2d").drawImage(out,0,0);
-    el.querySelector('[data-role="dim"]').textContent=
-      (st.manual?"手动":"自动")+` · ${out.width}×${out.height}`
-      +(vert?" · 竖版":"")+note+(rq?` · 转${rq*90}°`:"")
-      +` · ${st.side||"面别待定"}`;
-    bSwap.classList.toggle("on",!!st.swap);
-    bReset.classList.toggle("on",rq>0);
-  }
-  // 拖角
-  let drag=-1;
-  const norm=ev=>{const r=cvO.getBoundingClientRect();
-    return [(ev.clientX-r.left)/r.width,(ev.clientY-r.top)/r.height];};
-  cvO.addEventListener("pointerdown",e=>{
-    const qq=q(); if(!qq) return;
-    const [nx,ny]=norm(e); let bi=-1,bd=1e9;
-    qq.forEach((p,i)=>{const d=(p[0]-nx)**2+(p[1]-ny)**2;if(d<bd){bd=d;bi=i}});
-    if(bi>=0) setSel(bi);                       // 点一下就选中，方便接着用箭头调
-    if(bd<0.004){drag=bi;cvO.setPointerCapture(e.pointerId);}
-  });
-  cvO.addEventListener("pointermove",e=>{
-    if(drag<0)return;
-    const [nx,ny]=norm(e);
-    const qq=q().map(p=>[...p]);
-    qq[drag]=[Math.max(0,Math.min(1,nx)),Math.max(0,Math.min(1,ny))];
-    st.quad=qq; st.manual=true; rec.cur=qq;
-    paint(drag);
-  });
-  cvO.addEventListener("pointerup",()=>{
-    if(drag>=0){
-      const p=q()[drag];
-      log(`drag${drag+1}→(${p[0].toFixed(3)},${p[1].toFixed(3)})`);
-      drag=-1; refresh(true); save();
-    }
-  });
-
-  // ---- 四角微调条 ----
-  chips.forEach(c=>c.onclick=()=>setSel(+c.dataset.c));
-  el.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{
-    stepPx=+b.dataset.step;
-    el.querySelectorAll('[data-step]').forEach(x=>x.classList.toggle("on",x===b));
-  });
-  el.querySelectorAll('[data-nudge]').forEach(b=>{
-    const D={u:[0,-1],d:[0,1],l:[-1,0],r:[1,0]}[b.dataset.nudge];
-    b.onclick=()=>nudge(D[0],D[1]);
-  });
-  el.querySelector('[data-act="pullin"]').onclick=()=>{
-    const qq=q(); if(!qq) return toast("这张还没框");
-    const arr=qq.map(p=>[Math.max(0.002,Math.min(0.998,p[0])),
-                         Math.max(0.002,Math.min(0.998,p[1]))]);
-    st.quad=arr; st.manual=true; rec.cur=arr;
-    log("pullin");
-    paint(-1); refresh(true); save();
-    toast("已把超界的角收回画面内");
-  };
-  // 键盘方向键也能微调（选中角任何按钮后直接按方向键）
-  el.addEventListener("keydown",e=>{
-    const M={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]}[e.key];
-    if(!M) return;
-    e.preventDefault(); nudge(M[0],M[1]);
-  });
-
-  el.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{
-    const v=b.dataset.v; st.verdict=st.verdict===v?"":v;
-    // 打了"可用"就等于认可当前这个框 —— 自动存一份基准，
-    // 否则导出报告里 diag 全是空的（上一轮 20 张就吃了这个亏）。
-    if(st.verdict==="ok" && q() && !(st.gold&&!st.goldDirty)){
-      st.gold={quad:q().map(p=>[...p]),vert:effVert(),rotQ:rotQ(),swap:!!st.swap,
-               auto_quad:(rec.auto0||rec.quad0||null),ts:new Date().toISOString()};
-      st.goldDirty=false;
-      log("★自动存基准");
-    }
-    sync(el,st);
-  });
-  el.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{
-    const s=b.dataset.s; st.side=st.side===s?"":s; sync(el,st);
-  });
-  el.querySelectorAll(".tag").forEach(t=>t.onclick=()=>{
-    const g=t.dataset.t, i=st.tags.indexOf(g);
-    i>=0?st.tags.splice(i,1):st.tags.push(g);
-    t.classList.toggle("sel");
-    if(st.tags.length&&!st.verdict){st.verdict="bad";sync(el,st);}else save();
-  });
-  el.querySelector(".note").oninput=e=>{st.note=e.target.value;save();};
-  const setRot=d=>{ st.rotQ=((((st.rotQ|0)+d)%4)+4)%4;
-    log(`rot${d>0?"+":""}${d*90}`); refresh(false); save(); };
-  el.querySelector('[data-act="rotcw"]').onclick=()=>setRot(1);
-  el.querySelector('[data-act="rotccw"]').onclick=()=>setRot(-1);
-  el.querySelector('[data-act="rot180"]').onclick=()=>setRot(2);
-  el.querySelector('[data-act="resetrot"]').onclick=()=>{ st.rotQ=0; log("rot重置"); refresh(false); save(); };
-  el.querySelector('[data-act="swap"]').onclick=()=>{ st.swap=!st.swap; log(st.swap?"swap→竖":"swap→横"); refresh(false); save(); };
-  el.querySelector('[data-act="gold"]').onclick=()=>{
-    const qq=q(); if(!qq) return toast("这张还没框");
-    st.gold={quad:qq.map(p=>[...p]),vert:effVert(),rotQ:rotQ(),swap:!!st.swap,
-             auto_quad:(rec.auto0||rec.quad||null),ts:new Date().toISOString()};
-    st.goldDirty=false;
-    log("★存基准");
-    refresh(false); save(); stat();
-    toast("已存为人工基准框 —— 这张可以过了");
-  };
-  el.querySelector('[data-act="dl"]').onclick=()=>{
-    const cv=el.querySelector(".out canvas");
-    if(!cv.width) return toast("还没生成矫正图");
-    dlCanvas(cv,outName(rec,st));
-    toast("已下载 "+outName(rec,st));
-  };
-  const bk=el.querySelector('[data-act="keepid"]');
-  if(bk) bk.onclick=()=>{
-    st.keep=true;
-    rec._el.remove(); buildItem(rec);
-    stat(); paintNonId(); save();
-    toast("已放回列表：这张按身份证处理");
-  };
-  el.querySelector('[data-act="rerun"]').onclick=async()=>{
-    toast("重跑中…"); await new Promise(r=>setTimeout(r,30));
-    let r2=null;
-    if(ENGINE==="ml"){
-      // 同一个文件可能拆出多张卡：按卡序号取，取不到就退回第一张
-      let list=[];
-      try{ list=await detectMLCards(rec.canvas); }catch(e){ console.warn(e); }
-      r2=list[rec.cardIdx]||list[0]||null;
-    }else{
-      r2=detect(rec.canvas);
-      if(r2&&r2.quad){ r2.quad=refineQuad(rec.canvas,r2.quad);
-        r2.is_vertical=vertOf(r2.quad,rec.canvas.width,rec.canvas.height); }
-    }
-    rec.metrics=r2?r2.metrics:null; rec.quad=r2?r2.quad:null;
-    rec.auto0=r2?r2.quad:null; rec.cur=null;
-    rec.is_vertical=r2?!!r2.is_vertical:false; rec.fail=!r2;
-    st.quad=null; st.manual=false; st.gold=null; st.side=""; st.steps=["重跑"];
-    const m=rec.metrics||{};
-    el.querySelector(".metrics").innerHTML= rec.engine==="ml"
-      ? `<span class="chip hi">置信 ${(m.score||0).toFixed(3)}</span>
-         <span class="chip">面积 ${((m.area||0)*100).toFixed(0)}%</span>
-         <span class="chip">比例偏差 ${(m.ar||0).toFixed(3)}</span>
-         ${rec.cardCount>1?`<span class="chip hi">同图 ${rec.cardCount} 卡 · 第 ${rec.cardIdx+1}</span>`:""}`
-      : `<span class="chip">面积 ${((m.area||0)*100).toFixed(0)}%</span>
-         <span class="chip">比例偏差 ${(m.ar||0).toFixed(3)}</span>
-         <span class="chip ${m.es>0.6?"hi":""}">边缘 ${(m.es||0).toFixed(2)}</span>
-         <span class="chip">饱和 ${(m.smean||0).toFixed(2)}</span>`;
-    refresh(true); save(); toast("已重跑");
-  };
-  st.tags.forEach(t=>{const n=el.querySelector(`.tag[data-t="${t}"]`);if(n)n.classList.add("sel")});
-  el.querySelector(".note").value=st.note||"";
-  const se=el.querySelector('[data-role="steps"]');
-  if(se) se.textContent=(st.steps||[]).join(" → ");
-  sync(el,st); refresh(true);
-  rec._el=el;
-}
-function sync(el,st){
-  el.classList.toggle("v-ok",st.verdict==="ok");
-  el.classList.toggle("v-bad",st.verdict==="bad");
-  const vb=el.querySelector('[data-role="vb"]');
-  vb.className="badge "+(st.verdict==="ok"?"b-ok":st.verdict==="bad"?"b-bad":"b-unk");
-  vb.textContent=st.verdict==="ok"?"人工·可用":st.verdict==="bad"?"人工·错":"未审";
-  el.querySelectorAll("[data-v]").forEach(b=>{
-    b.classList.toggle("on-ok",b.dataset.v==="ok"&&st.verdict==="ok");
-    b.classList.toggle("on-bad",b.dataset.v==="bad"&&st.verdict==="bad");
-  });
-  el.querySelectorAll("[data-s]").forEach(b=>b.classList.toggle("on-sel",b.dataset.s===st.side));
-  save();stat();
-}
-function stat(){
-  let ok=0,bad=0,todo=0,gold=0,cut=0;
-  recs.forEach(r=>{const s=state.items[r.id]||{};
-    // 判成银行卡/社保卡的条目不进统计：它们不是身份证，混进来会把"可用率"拉花
-    if(r.notId&&!s.keep){cut++;return;}
-    if(s.gold)gold++;
-    if(!s.verdict)todo++;else if(s.verdict==="ok")ok++;else bad++;});
-  document.getElementById("stat").innerHTML=
-    `共 <b>${recs.length-cut}</b> 张 · 基准 <b style="color:#7ce6a8">${gold}</b> · 可用 <b style="color:#4cd58a">${ok}</b> · 错 <b style="color:#f07a70">${bad}</b> · 未审 <b>${todo}</b>`
-    +(cut?` · 剔除 <b style="color:#f0a29a">${cut}</b>`:"");
-}
-
-/* ================= 导入 =================
-   一个文件可能出 1~N 条记录（同图多卡）。id 用「文件键#卡序号」，标签/判定仍按条存。 */
-async function addFiles(files){
-  const arr=[...files].filter(f=>f.type.startsWith("image/"));
-  if(!arr.length) return;
-  document.getElementById("drop").classList.add("hidden");
-  const MAXDIM=1800;
-  let nCard=0, nFile=0, nNotId=0;
-  for(let i=0;i<arr.length;i++){
-    const f=arr[i];
-    const key="f_"+f.name+"_"+f.size;
-    if(recs.some(r=>(r.srcKey||r.id)===key)) continue;
-    const url=URL.createObjectURL(f);
-    const img=new Image();
-    await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url;});
-    const sc=Math.min(1, MAXDIM/Math.max(img.naturalWidth,img.naturalHeight));
-    const c=document.createElement("canvas");
-    c.width=Math.round(img.naturalWidth*sc);c.height=Math.round(img.naturalHeight*sc);
-    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-    URL.revokeObjectURL(url);
-    let found=[];
-    if(ENGINE==="ml"){
-      try{ found=await detectMLCards(c); }
-      catch(e){ console.warn("[ML] 多卡检测出错，回退经典",e); }
-      if(!found.length){
-        const r2=detect(c);
-        if(r2){ r2.quad=refineQuad(c,r2.quad); r2.is_vertical=vertOf(r2.quad,c.width,c.height); r2.engine="classic-fallback"; found=[r2]; }
-      }
-    }else{
-      const r=detect(c);
-      if(r){ r.quad=refineQuad(c,r.quad); r.is_vertical=vertOf(r.quad,c.width,c.height); found=[r]; }
-    }
-    if(!found.length) found=[null];
-    nFile++;
-    for(let k=0;k<found.length;k++){
-      const r=found[k];
-      const rec={id:key+"#"+k, srcKey:key, no:recs.length+1, cardIdx:k, cardCount:found.length,
-                 name:f.name, canvas:c,
-                 quad:r?r.quad:null, auto0:r?r.quad:null, cur:null,
-                 metrics:r?r.metrics:null, is_vertical:r?!!r.is_vertical:false,
-                 engine:r?(r.engine||ENGINE):ENGINE, wholeImage:!!(r&&r.engine==="whole"),
-                 fail:!r, detTag:r?(r.tag||""):"", autoSide:""};
-      if(rec.quad){
-        try{
-          const wc=warpCanvas(rec,rec.quad,rec.is_vertical);
-          const kk=cardKind(wc);
-          rec.notId=kk.notId; rec.kindWhy=kk.why; rec.kindF=kk;
-          // 面别只对身份证算：银行卡/社保卡没有面别，硬算只会产出噪声
-          if(!kk.notId) rec.autoSide=sideOf(wc);
-          else nNotId++;
-        }catch(e){ console.warn(e); }
-      }
-      recs.push(rec);
-      buildItem(rec);
-      nCard++;
-      await new Promise(res=>setTimeout(res,0));
-    }
-    stat();
-  }
-  // 新文件进来会改变公共前缀，统一刷一遍辨识段（只改文字，不重算图）
-  recs.forEach(r=>{
-    const fb=r._el&&r._el.querySelector(".fbase");
-    if(fb) fb.textContent=shortTag(r.name);
-  });
-  toast(nCard>nFile
-    ? `已导入 ${nFile} 张，拆出 ${nCard} 张卡${nNotId?`，其中 ${nNotId} 张判为银行卡/社保卡已折叠`:""}`
-    : `已导入 ${nCard} 张${nNotId?`，其中 ${nNotId} 张判为银行卡/社保卡已折叠`:""}`);
-  paintNonId();
-}
-
-/* ================= 事件 ================= */
-const engBtn=document.getElementById("btnEngine");
-function paintEngine(){
-  engBtn.textContent="引擎："+(ENGINE==="ml"?"ML":"经典");
-  engBtn.classList.toggle("mlon", ENGINE==="ml");
-}
-paintEngine();
-/* 标签/备注/判定是按文件名存在浏览器本地的，换引擎后上一轮的结论已经不适用于新结果，
-   必须清掉 —— 否则报告里会继续挂着"没检出"，把判断带偏（真发生过）。基准(gold)保留。 */
-function clearMarks(){
-  let n=0;
-  for(const id in state.items){
-    const s=state.items[id]; if(!s) continue;
-    if((s.tags&&s.tags.length)||(s.note||"").trim()||s.verdict) n++;
-    s.tags=[]; s.note=""; s.verdict="";
-    const el=recs.find(r=>r.id===id); if(!el) continue;
-    const node=el._el; if(!node) continue;
-    node.querySelectorAll(".tag.sel").forEach(t=>t.classList.remove("sel"));
-    const nt=node.querySelector(".note"); if(nt) nt.value="";
-    sync(node,s);
-  }
-  save(); stat();
-  return n;
-}
-engBtn.onclick=async()=>{
-  ENGINE = ENGINE==="ml" ? "classic" : "ml";
-  localStorage.setItem("engine",ENGINE);
-  paintEngine();
-  const cleared=clearMarks();
-  if(cleared) toast(`已切换引擎：${cleared} 张上一轮的标签/备注已清空（基准保留），请重新审一遍`);
-  if(ENGINE==="ml"){
-    if(!_scanicP) toast("ML 模型加载中（约 3.5MB，仅首次）…");
-    try{ await loadScanic(); if(!cleared) toast("ML 就绪。点「全部重跑」用新引擎重算。"); }
-    catch(e){ toast("ML 加载失败："+(e&&e.message||e)); }
-  } else if(!cleared) toast("已切回经典引擎。点「全部重跑」重算。");
-};
-document.getElementById("btnPick").onclick=()=>fileEl.click();
-/* 被判成银行卡/社保卡的条目默认折叠：记录全留着，"去掉"只是不占版面、不参与导出，
-   点「已剔除 N 张」展开核对，单条可点「这是身份证」救回。 */
-const nonIdBtn=document.getElementById("btnNonId");
-function paintNonId(){
-  const n=recs.filter(r=>r.notId&&!(state.items[r.id]||{}).keep).length;
-  const expanded=localStorage.getItem("showNonId")==="1";
-  listEl.classList.toggle("hideNonId",!expanded);
-  nonIdBtn.textContent=expanded?`隐藏非身份证 (${n})`:`已剔除 ${n} 张`;
-  nonIdBtn.classList.toggle("on",expanded);
-  nonIdBtn.disabled=!n&&!expanded;
-}
-nonIdBtn.onclick=()=>{
-  localStorage.setItem("showNonId", localStorage.getItem("showNonId")==="1"?"0":"1");
-  paintNonId();
-};
-paintNonId();
-fileEl.onchange=e=>{addFiles(e.target.files);fileEl.value="";};
-const drop=document.getElementById("drop");
-drop.onclick=()=>fileEl.click();
-["dragenter","dragover"].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add("over")}));
-["dragleave","drop"].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove("over")}));
-drop.addEventListener("drop",e=>{addFiles(e.dataTransfer.files)});
-document.addEventListener("dragover",e=>e.preventDefault());
-document.addEventListener("drop",e=>{e.preventDefault();if(e.dataTransfer.files.length)addFiles(e.dataTransfer.files)});
-
-document.getElementById("tabs").onclick=e=>{
-  const t=e.target.closest(".tab");if(!t)return;
-  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-  t.classList.add("active");
-  const f=t.dataset.f;
-  document.querySelectorAll(".item").forEach(el=>{
-    const id=el.dataset.id, s=state.items[id]||{};
-    let show=true;
-    if(f==="bad") show=s.verdict==="bad";
-    if(f==="nodl") show=!s.gold;
-    el.classList.toggle("hidden",!show);
-  });
-};
-document.getElementById("btnRerunAll").onclick=async()=>{
-  if(!recs.length) return toast("先导入图片");
-  toast("批量重跑中…");
-  // 一图多卡时多个 rec 共享同一张源画布：按文件分组，每个文件只跑一次检测
-  const groups=new Map();
-  recs.forEach(r=>{ const k=r.srcKey||r.id; if(!groups.has(k)) groups.set(k,[]); groups.get(k).push(r); });
-  for(const [k,list] of groups){
-    const src=list[0].canvas;
-    let found=[];
-    if(ENGINE==="ml"){
-      try{ found=await detectMLCards(src); }catch(e){ console.warn(e); }
-      if(!found.length){
-        const r2=detect(src);
-        if(r2){ r2.quad=refineQuad(src,r2.quad); r2.is_vertical=vertOf(r2.quad,src.width,src.height); r2.engine="classic-fallback"; found=[r2]; }
-      }
-    }else{
-      const r=detect(src);
-      if(r){ r.quad=refineQuad(src,r.quad); r.is_vertical=vertOf(r.quad,src.width,src.height); found=[r]; }
-    }
-    list.forEach((rec,j)=>{
-      const r=found[j]||null;
-      rec.quad=r?r.quad:null; rec.auto0=r?r.quad:null; rec.cur=null;
-      rec.metrics=r?r.metrics:null; rec.engine=r?(r.engine||ENGINE):ENGINE;
-      rec.wholeImage=!!(r&&r.engine==="whole");
-      rec.is_vertical=r?!!r.is_vertical:false; rec.fail=!r;
-      rec.detTag=r?(r.tag||""):"";
-      if(found.length) rec.cardCount=found.length;
-      // 重跑会换框，卡种要跟着新框重判，否则"折叠"状态会停留在旧框上
-      rec.notId=false; rec.kindWhy=""; rec.autoSide="";
-      if(rec.quad){
-        try{
-          const wc=warpCanvas(rec,rec.quad,rec.is_vertical);
-          const kk=cardKind(wc);
-          rec.notId=kk.notId; rec.kindWhy=kk.why;
-          if(!kk.notId) rec.autoSide=sideOf(wc);
-        }catch(e){ console.warn(e); }
-      }
-      const st=state.items[rec.id]; if(st){st.quad=null;st.manual=false;st.gold=null;st.side="";st.steps=["全部重跑"];}
-      rec._el.remove(); buildItem(rec);
+  cards.forEach(c => {
+    const el = document.createElement("div");
+    el.className = "cardrow";
+    el.innerHTML = `
+      <div class="thumb"><img src="${c.thumb}" alt=""></div>
+      <div class="info">
+        ${c.kind && c.kind.warn ? `<div class="flag">⚠︎ ${c.kind.msg}</div>` : ""}
+        ${c.unsure ? `<div class="flag">方向没判准，是倒的就点 ↻</div>` : ""}
+        <div class="nm">${c.srcName}</div>
+        <div class="seg">
+          <button data-s="人像面" class="${c.side === "人像面" ? "on" : ""}">人像面</button>
+          <button data-s="国徽面" class="${c.side === "国徽面" ? "on" : ""}">国徽面</button>
+        </div>
+      </div>
+      <button class="ic rot" title="转 180°">↻</button>
+      <button class="ic del" title="删除">×</button>`;
+    el.querySelectorAll("[data-s]").forEach(b => {
+      b.onclick = () => {
+        c.side = b.dataset.s;
+        c.ocr = null; c.ocrTried = false;   // 面别换了，OCR 字段区域全变，重新识别
+        queueOcr(c);
+        renderCards(); renderPreview();
+      };
     });
-    await new Promise(r2=>setTimeout(r2,0));
-  }
-  stat(); paintNonId(); toast("重跑完成");
-};
-// 自动框 vs 人工基准框的偏差诊断 —— 这是"根据矫正步骤反推算法"的量化输入。
-// 注意两边都是归一化坐标（0~1），与图片像素无关，可以直接跨图聚合。
-function quadDiag(a,g){
-  if(!a||!g||a.length<4||g.length<4) return null;
-  const area=q=>{let s=0;for(let i=0;i<4;i++){const [x1,y1]=q[i],[x2,y2]=q[(i+1)%4];
-    s+=x1*y2-x2*y1;}return Math.abs(s)/2;};
-  const cen=q=>[(q[0][0]+q[1][0]+q[2][0]+q[3][0])/4,(q[0][1]+q[1][1]+q[2][1]+q[3][1])/4];
-  const dd=(p,r)=>Math.hypot(p[0]-r[0],p[1]-r[1]);
-  const arw=q=>{const ew=(dd(q[1],q[0])+dd(q[2],q[3]))/2, eh=(dd(q[3],q[0])+dd(q[2],q[1]))/2;
-    return ew/Math.max(1e-6,eh);};
-  const corners=a.map(p=>{
-    let bi=0,bd=1e9;
-    g.forEach((x,j)=>{const t=(x[0]-p[0])**2+(x[1]-p[1])**2;if(t<bd){bd=t;bi=j;}});
-    return [ +(g[bi][0]-p[0]).toFixed(4), +(g[bi][1]-p[1]).toFixed(4) ];
+    el.querySelector(".rot").onclick = () => {
+      c.cv = rotN(c.cv, 2);
+      // 派生像素全是按旧朝向算的，一并作废，让 eff() 按新 cv 重算
+      c.wbGain = null; c.wbFor = null; c.cvWb = null;
+      c.shFor = null; c.sh = null;
+      c.hcFor = null; c.hcSide = null; c.hc = null;
+      c.thumb = eff(c).toDataURL("image/jpeg", 0.72);
+      c.unsure = false;
+      // 转了 180°，面别判据的前提也变了，重算一次（用户仍可点按钮覆盖）
+      try { const s = sideOf(c.cv); if (s) c.side = s; } catch (e) {}
+      renderCards(); renderPreview();
+    };
+    el.querySelector(".del").onclick = () => {
+      const i = cards.indexOf(c);
+      if (i >= 0) cards.splice(i, 1);
+      renderCards(); renderPreview();
+    };
+    box.appendChild(el);
   });
-  const A=area(a),G=area(g), ratio=G/Math.max(1e-6,A);
-  const ca=cen(a),cg=cen(g);
-  const shift=[+(cg[0]-ca[0]).toFixed(4),+(cg[1]-ca[1]).toFixed(4)];
-  const maxc=Math.max(...corners.map(c=>Math.hypot(c[0],c[1])));
-  let kind="ok";
-  if(Math.abs(Math.log(arw(g)/Math.max(1e-6,arw(a))))>0.12) kind="ratio";
-  else if(Math.abs(Math.log(ratio))>0.10) kind=ratio>1?"框太小":"框太大";
-  else if(Math.hypot(shift[0],shift[1])>0.02) kind="整体偏移";
-  else if(maxc>0.02) kind="单角偏差";
-  return {kind,area_auto:+A.toFixed(4),area_gold:+G.toFixed(4),area_ratio:+ratio.toFixed(3),
-    ar_auto:+arw(a).toFixed(3),ar_gold:+arw(g).toFixed(3),
-    center_shift:shift,corner_shift:corners,max_corner_shift:+maxc.toFixed(4)};
 }
-function buildReport(){
-  const items=recs.map(r=>{
-    const s=state.items[r.id]||{};
-    const aq=r.auto0||r.quad||null, gq=(s.gold&&s.gold.quad)||null;
-    return {no:r.no,idx:pad2(r.no),file:r.name,base:baseName(r.name),
-      key:`${pad2(r.no)}_${baseName(r.name)}${r.cardCount>1?`_c${(r.cardIdx|0)+1}`:""}`,
-      card_idx:(r.cardIdx|0),card_count:(r.cardCount|0),src_key:r.srcKey||r.id,det_tag:r.detTag||"",
-      not_id:!!r.notId&&!s.keep,not_id_why:r.kindWhy||"",kind_feat:r.kindF||null,
-      auto:r.auto,metrics:r.metrics,engine:r.engine||ENGINE,
-      verdict:s.verdict||"",side:s.side||"",tags:s.tags||[],note:s.note||"",
-      gold:!!s.gold,steps:s.steps||[],
-      manual:!!s.manual,auto_quad:aq,gold_quad:gq,final_quad:s.quad||r.quad,
-      diag:quadDiag(aq,gq),
-      is_vertical:(!!r.is_vertical!==!!s.swap),is_vertical_auto:!!r.is_vertical,
-      aspect_swap:!!s.swap,rot:(((s.rotQ|0)%4)+4)%4,rot_deg:((((s.rotQ|0)%4)+4)%4)*90,
-      quad_clipped:!!(s.quad||r.quad||[]).some(p=>p[0]<0||p[0]>1||p[1]<0||p[1]>1),
-      whole_image:!!r.wholeImage};
-  });
-  // 聚合失效模式：哪个 kind 出现最多，就先改那条判据/权重
-  const tally={};
-  items.forEach(it=>{ if(it.diag){ tally[it.diag.kind]=(tally[it.diag.kind]||0)+1; } });
-  return {version:3,generated:new Date().toISOString(),
-    answers:state.q,
-    summary:{total:recs.length,
-      ok:items.filter(i=>i.verdict==="ok").length,
-      bad:items.filter(i=>i.verdict==="bad").length,
-      todo:items.filter(i=>!i.verdict).length,
-      gold:items.filter(i=>i.gold).length,
-      diag_kinds:tally},
-    items};
+
+/* ---------- 图片解码 ---------- */
+const MAXDIM = 1800;   // 送模型前先降到 ≤1800，否则 wasm 侧内存吃不住
+async function fileToCanvas(file){
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => res(im);
+      im.onerror = rej;
+      im.src = url;
+    });
+    const sc = Math.min(1, MAXDIM / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement("canvas");
+    c.width = Math.max(1, Math.round(img.naturalWidth * sc));
+    c.height = Math.max(1, Math.round(img.naturalHeight * sc));
+    const ctx = c.getContext("2d");
+    ctx.fillStyle = "#fff";              // 透明 PNG 转白底，避免裁出来带黑
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    return c;
+  } finally { URL.revokeObjectURL(url); }
 }
-document.getElementById("btnExport").onclick=()=>{
-  if(!recs.length) return toast("先导入图片");
-  const blob=new Blob([JSON.stringify(buildReport(),null,2)],{type:"application/json"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download=`corrections_${new Date().toISOString().slice(0,16).replace(/[:T]/g,"-")}.json`;
-  a.click();URL.revokeObjectURL(a.href);
-  toast("已导出 corrections.json —— 发回给我即可");
-};
-document.getElementById("btnNext").onclick=()=>{
-  if(!recs.length) return toast("先导入图片");
-  const r=recs.find(x=>!(state.items[x.id]||{}).gold) || null;
-  if(!r) return toast("20 张全部存过基准了 ✓");
-  r._el.scrollIntoView({behavior:"smooth",block:"center"});
-  document.querySelectorAll(".item").forEach(e=>e.classList.remove("flash"));
-  r._el.classList.add("flash");
-  setTimeout(()=>r._el.classList.remove("flash"),1800);
-  toast(`下一张未存基准：${pad2(r.no)} ${shortTag(r.name)}`);
-};
-document.getElementById("btnDlAll").onclick=async()=>{
-  if(!recs.length) return toast("先导入图片");
-  // 被判成银行卡/社保卡的默认不出图；想连它们一起导，先点「已剔除 N 张」展开
-  const out=recs.filter(r=>!(r.notId&&!(state.items[r.id]||{}).keep));
-  if(!out.length) return toast("没有可导出的身份证（全部被判成银行卡，点「已剔除」核对）");
-  toast(`开始逐张下载 ${out.length} 张（浏览器若提示「允许多个下载」请点允许）`);
-  for(const r of out){
-    const cv=r._el&&r._el.querySelector(".out canvas");
-    if(cv&&cv.width){
-      const st=state.items[r.id]||{};
-      dlCanvas(cv,outName(r,st));
-      await new Promise(x=>setTimeout(x,420));
+
+/* 灰度离散度：用来挡掉"模型硬凑出来的框"。
+   实测真实卡面（含银行卡）31.7~52.4，纯色/渐变/噪点图 0~4.6，中间空档极大，取 12。 */
+function grayStd(cv){
+  const W = Math.min(cv.width, 320), H = Math.max(1, Math.round(cv.height * W / cv.width));
+  const t = document.createElement("canvas"); t.width = W; t.height = H;
+  const x = t.getContext("2d", { willReadFrequently: true });
+  x.drawImage(cv, 0, 0, W, H);
+  const d = x.getImageData(0, 0, W, H).data;
+  const x0 = Math.round(W * .05), x1 = Math.round(W * .95);
+  const y0 = Math.round(H * .05), y1 = Math.round(H * .95);
+  let s = 0, s2 = 0, n = 0;
+  for (let y = y0; y < y1; y++) {
+    const row = y * W;
+    for (let px = x0; px < x1; px++) {
+      const i = (row + px) * 4;
+      const g = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+      s += g; s2 += g * g; n++;
     }
   }
-  toast(`已导出 ${out.length} 张，文件名均为 序号_原文件名.png`);
-};
-document.getElementById("btnCopy").onclick=async()=>{
-  if(!recs.length) return toast("先导入图片");
-  const R=buildReport();
-  let t=`【身份证打分反馈】共${R.summary.total}张 基准${R.summary.gold} 可用${R.summary.ok} 错${R.summary.bad} 未审${R.summary.todo}\n`;
-  const A=R.answers;
-  t+=`\n[我的回答]\n`+QS.map(q=>`- ${q.t} → ${A[q.id]||"（未选）"}`).join("\n");
-  t+=`\n\n[逐张] （序号_原文件名）\n`;
-  R.items.forEach(it=>{
-    if(!it.verdict && !it.gold) return;
-    t+=`[${it.idx}] ${it.base} | ${it.verdict==="ok"?"可用":it.verdict==="bad"?"错":"未评"}`
-      +`${it.gold?" | ★基准":""}`
-      +`${it.side?" | "+it.side:""}${it.tags.length?" | "+it.tags.join(","):""}`
-      +`${it.rot_deg?" | 转"+it.rot_deg+"°":""}${it.aspect_swap?" | 换竖横":""}`
-      +`${it.diag&&it.diag.kind!=="ok"?" | 偏差:"+it.diag.kind:""}`
-      +`${it.steps.length?" | 步骤:"+it.steps.join(">"):""}`
-      +`${it.note?" | "+it.note:""}\n`;
-  });
-  try{await navigator.clipboard.writeText(t);toast("反馈文本已复制，粘到对话里即可");}
-  catch(e){prompt("复制下面内容：",t);}
-};
+  if (!n) return 0;
+  const m = s / n;
+  return Math.sqrt(Math.max(0, s2 / n - m * m));
+}
 
-/* ================= 启动 ================= */
-(function boot(){
-  load(); renderAsk();
-  // 测试钩子（供无头回归读取/注入）
-  window.__STATE__=state; window.__BUILD__=buildItem;
-  document.getElementById("boot").classList.add("hidden");
-})();
+/* 检测 → 拆卡 → 矫正 → 每张卡一条记录 */
+async function processFile(file){
+  const src = await fileToCanvas(file);
+  const rec = { canvas: src };
+  let found = [];
+  try {
+    found = await detectMLCards(src);
+  } catch (e) { console.warn("[detect] 失败，回退单框", e); }
+  if (!found || !found.length) {
+    const r = await detectAny(src);
+    if (r && r.quad) found = [r];
+  }
+  const out = [];
+  let blank = 0;
+  for (const r of found) {
+    if (!r || !r.quad) continue;
+    let cv;
+    try { cv = warpCanvas(rec, r.quad, !!r.is_vertical); } catch (e) { continue; }
+    // 竖版（侧躺拍摄 / 整图即卡且卡是竖的）先择优转 90°，横版再判 180°
+    const up = autoUpright(cv);
+    cv = up.cv;
+    if (Math.abs(cv.width - CARD_W) > 2 || Math.abs(cv.height - CARD_H) > 2) {
+      const t = document.createElement("canvas");
+      t.width = CARD_W; t.height = CARD_H;
+      t.getContext("2d").drawImage(cv, 0, 0, CARD_W, CARD_H);
+      cv = t;
+    }
+    // 几乎空白 → 模型给的框是硬凑的，别当证件收下
+    if (grayStd(cv) < 12) { blank++; continue; }
+    let side = "";
+    try { side = sideOf(cv) || ""; } catch (e) {}
+    let kind = null;
+    try {
+      const k = cardKind(cv);
+      if (k && (k.notId || k.isId === false)) {
+        kind = { warn: true, msg: `这张更像银行卡/社保卡（${k.why || ""}），确认后再放进去` };
+      }
+    } catch (e) {}
+    out.push({ cv, cvWb: null, side, kind, srcName: file.name, rot: up.rot, unsure: up.unsure });
+  }
+  return { list: out, blank };
+}
+
+/* ---------- 添加 ---------- */
+function toast(msg, warn){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.toggle("warn", !!warn);
+  t.classList.add("show");
+  clearTimeout(toast._h);
+  toast._h = setTimeout(() => t.classList.remove("show"), 2600);
+}
+function setBusy(on, txt){
+  $("#busy").classList.toggle("show", on);
+  if (txt) $("#busyTxt").textContent = txt;
+}
+
+/* 浏览器解不了的格式要说清楚是哪一种：扫描仪默认常输出 PDF/TIFF，iPhone 传电脑常是 HEIC。
+   原来一律回一句「没有可用的图片」，用户根本不知道是格式问题，只会反复重试。 */
+const UNREADABLE = /^image\/(tiff?|heic|heif|jp2|jxl)$/i;
+function formatHint(files){
+  const s = [...files].map(f => (f.type || "") + " " + (f.name || "")).join(" ").toLowerCase();
+  if (/application\/pdf|\.pdf(\s|$)/.test(s))  return "PDF 读不了：让扫描仪输出 JPG/PNG，或先截图再导入";
+  if (/image\/tiff|\.tiff?(\s|$)/.test(s))     return "TIFF 浏览器不支持：扫描仪里把格式改成 JPG/PNG";
+  if (/heic|heif/.test(s))                     return "HEIC 读不了：导出时选「兼容性最佳」，或先截图";
+  return "";
+}
+async function addFiles(files){
+  const arr = [...files].filter(f => f && f.type && f.type.startsWith("image/") && !UNREADABLE.test(f.type));
+  if (!arr.length) return toast(formatHint(files) || "没有可用的图片", true);
+  const room = 2 - cards.length;
+  if (room <= 0) return toast("一页 A4 只放 2 张（人像面 + 国徽面），先删掉一张", true);
+  const take = arr.slice(0, room);
+  setBusy(true, take.length > 1 ? `处理中 1/${take.length}…` : "识别卡面…");
+  await new Promise(r => setTimeout(r, 40));
+  let added = 0, skipped = 0;
+  for (let i = 0; i < take.length; i++) {
+    setBusy(true, take.length > 1 ? `处理中 ${i + 1}/${take.length}…` : "识别卡面…");
+    try {
+      const { list, blank } = await processFile(take[i]);
+      if (blank && !list.length) { toast("这张几乎没内容，可能过曝或不是证件", true); continue; }
+      if (!list.length) { toast("这张没找到卡面", true); continue; }
+      for (const c of list) {
+        // 同框的银行卡/社保卡默认不占位：一页只有 2 个位置，要留给身份证正反面
+        if (c.kind && c.kind.warn) { skipped++; continue; }
+        if (cards.length >= 2) { toast("已满 2 张，这张没放进去", true); break; }
+        const item = { ...c, id: ++uid };
+        item.thumb = eff(item).toDataURL("image/jpeg", 0.72);
+        cards.push(item);
+        queueOcr(item);
+        added++;
+      }
+    } catch (e) {
+      console.error(e);
+      toast("这张处理失败：" + (e.message || e), true);
+    }
+  }
+  setBusy(false);
+  renderCards(); renderPreview();
+  if (skipped) toast(`跳过了 ${skipped} 张银行卡/社保卡`);
+  else if (added) toast(cards.length === 1 ? "已加入 1 张 · 再拍另一面" : `已加入 ${added} 张`);
+  if (arr.length > take.length) toast(`一页最多 2 张，只处理了前 ${take.length} 张`, true);
+}
+
+/* ---------- 导出 ---------- */
+function buildSheet(){
+  const cv = document.createElement("canvas");
+  cv.width = A4_W; cv.height = A4_H;
+  paintSheet(cv.getContext("2d"), A4_W, A4_H, 1);
+  return cv;
+}
+function stamp(){
+  const d = new Date(), p = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`;
+}
+function saveBlob(blob, name){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+
+/* ===== 保存文件名模板 + 百度联网 OCR =====
+   标签：{姓名}{证号}{有效期止}{地址} 来自 OCR；{时间}=日期+时分秒；{固定文字}=手输；
+   {序号}=人像面张数计数（新人像 +1，同一人正反面同号），起始号可设。
+   **最小上传**：按模板里实际用到的标签，只截取对应字段的小块区域送百度通用文字识别，
+   整卡（含人像照片）不出本机。姓名/证号/地址在人像面，有效期止在国徽面。
+   key 只存本机 localStorage。 */
+const FNT_DEF = "身份证-{时间}";
+const FN_TAGS = ["姓名", "证号", "有效期止", "地址", "时间", "固定文字", "序号"];
+const FNT_OCR = ["姓名", "证号", "有效期止", "地址"];
+/* 字段小图裁剪框（归一化坐标，卡面 1011×638，已在 5 人 10 面上目视标定套准） */
+const FN_CROPS = {
+  "姓名":   { side: "人像面", box: [0.165, 0.070, 0.640, 0.235] },
+  "地址":   { side: "人像面", box: [0.165, 0.470, 0.660, 0.730] },
+  "证号":   { side: "人像面", box: [0.320, 0.775, 0.940, 0.950] },
+  "有效期止": { side: "国徽面", box: [0.300, 0.780, 0.920, 0.950] },
+};
+const FNT_KEY = { "姓名": "name", "证号": "idnum", "地址": "addr", "有效期止": "expire" };
+let OCR_ON = false;
+let ocrQueue = [], ocrBusy = false;
+
+const pad2 = n => String(n).padStart(2, "0");
+function fmtTime(){
+  const d = new Date();
+  return `${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}-${pad2(d.getHours())}${pad2(d.getMinutes())}${pad2(d.getSeconds())}`;
+}
+function fnSeqNow(){
+  const st = Math.max(1, parseInt($("#fnSeq").value) || 1);
+  const n = cards.filter(c => c.side === "人像面").length;
+  return n ? st + n - 1 : st;
+}
+function buildName(ext){
+  // OCR 字段分散在两张卡上（姓名/证号/地址在人像面，有效期止在国徽面），跨卡合并，先到先得
+  const ocr = {};
+  for (const c of cards) if (c.ocr) for (const k in c.ocr) if (!(k in ocr) && c.ocr[k]) ocr[k] = c.ocr[k];
+  const map = {
+    "姓名":   (ocr.name   || "").trim(),
+    "证号":   (ocr.idnum  || "").trim(),
+    "有效期止": ocr.expire || "",
+    "地址":   (ocr.addr   || "").trim(),
+    "时间":   fmtTime(),
+    "固定文字": ($("#fnFix").value || "").trim(),
+    "序号":   String(fnSeqNow()),
+  };
+  let s = ($("#fnTpl").value || "").trim() || FNT_DEF;
+  for (const k in map) s = s.split("{" + k + "}").join(map[k]);
+  s = s.replace(/\{[^}]*\}/g, "")          // 没识别出来的字段直接删掉，不留 {xx}
+       .replace(/-{2,}/g, "-").replace(/_{2,}/g, "_")
+       .replace(/^[-_ ]+|[-_ ]+$/g, "")
+       .replace(/[\\/:*?"<>|]/g, "");
+  return (s || `身份证-${fmtTime()}`) + "." + ext;
+}
+function updateFnPrev(){
+  const el = $("#fnPrev");
+  if (el) el.textContent = "预览：" + buildName("jpg");
+}
+
+async function baiduToken(){
+  const cached = JSON.parse(localStorage.getItem("baiduTok") || "null");
+  if (cached && cached.exp > Date.now()) return cached.tok;
+  const key = $("#ocrKey").value.trim(), sec = $("#ocrSecret").value.trim();
+  if (!key || !sec) throw new Error("先在设置里填百度 API Key / Secret Key");
+  const r = await fetch("https://aip.baidubce.com/oauth/2.0/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `grant_type=client_credentials&client_id=${encodeURIComponent(key)}&client_secret=${encodeURIComponent(sec)}`,
+  });
+  const j = await r.json();
+  if (!j.access_token) throw new Error("取 token 失败：" + (j.error_description || j.error || ""));
+  localStorage.setItem("baiduTok", JSON.stringify({ tok: j.access_token, exp: Date.now() + ((j.expires_in || 86400) - 600) * 1000 }));
+  return j.access_token;
+}
+/* 按归一化框裁出字段小图（如「姓名」约 460×105 px），只有这一小块会被上传 */
+function cropNorm(src, box){
+  const [x0, y0, x1, y1] = box;
+  const c = document.createElement("canvas");
+  c.width = Math.round((x1-x0) * src.width);
+  c.height = Math.round((y1-y0) * src.height);
+  c.getContext("2d").drawImage(src, x0*src.width, y0*src.height, (x1-x0)*src.width, (y1-y0)*src.height, 0, 0, c.width, c.height);
+  return c;
+}
+function parseField(tag, lines){
+  const txt = lines.join("").replace(/\s+/g, "");
+  if (tag === "姓名"){
+    // 裁剪框里只有姓名一行：取第一条纯汉字行（防止把别的内容当最长匹配串进来）
+    for (let ln of lines){
+      ln = ln.replace(/姓名/g, "").replace(/\s+/g, "");
+      if (/^[\u4e00-\u9fa5·]{2,10}$/.test(ln)) return ln;
+    }
+    const all = (txt.match(/[\u4e00-\u9fa5·]{2,10}/g) || []);
+    return all[0] || "";
+  }
+  if (tag === "地址")  return txt.replace(/[^\u4e00-\u9fa50-9]/g, "").slice(0, 60);
+  if (tag === "证号"){
+    const m = (txt.match(/[0-9Xx]{15,18}/g) || []).sort((a,b) => b.length - a.length);
+    return (m[0] || "").toUpperCase();
+  }
+  if (tag === "有效期止"){
+    if (/长期/.test(txt) && !/2\s*0\s*\d/.test(txt.split("长期")[1] || "")) return "长期";
+    const ds = txt.match(/(?:19|20)\d{2}[.年/\-]?\d{1,2}[.月/\-]?\d{1,2}/g);
+    if (!ds) return "";
+    return ds[ds.length-1].replace(/\D/g, "");
+  }
+  return "";
+}
+async function ocrFields(job){
+  const tok = await baiduToken();
+  for (const tag of job.fields){
+    const cv = cropNorm(job.card.cv, FN_CROPS[tag].box);
+    const b64 = cv.toDataURL("image/jpeg", 0.9).split(",")[1];
+    const r = await fetch("https://aip.baidubce.com/rest/2.0/ocr/v1/general_basic?access_token=" + tok, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "language_type=CHN_ENG&image=" + encodeURIComponent(b64),
+    });
+    const j = await r.json();
+    if (j.error_code) throw new Error(j.error_msg || ("error_code " + j.error_code));
+    const lines = (j.words_result || []).map(w => w.words || "");
+    const v = parseField(tag, lines);
+    if (v){
+      job.card.ocr = job.card.ocr || {};
+      job.card.ocr[FNT_KEY[tag]] = v;
+      updateFnPrev();
+    }
+  }
+}
+function pumpOcr(){                       // 串行消费队列，避免并发触发限流
+  if (ocrBusy) return;
+  const job = ocrQueue.shift();
+  if (!job) return;
+  ocrBusy = true;
+  ocrFields(job)
+    .then(() => { const o = job.card.ocr || {}; toast(`OCR 完成：${o.name || ""}${o.expire ? " · " + o.expire : ""}`); })
+    .catch(e => toast("OCR 失败：" + (e.message || e), true))
+    .finally(() => { ocrBusy = false; pumpOcr(); });
+}
+function queueOcr(c){
+  if (!OCR_ON) return;
+  const fields = neededOcrFields(c.side);
+  if (!fields.length || c.ocrTried) return;
+  c.ocrTried = true;
+  ocrQueue.push({ card: c, fields });
+  pumpOcr();
+}
+function neededOcrFields(side){
+  const tpl = $("#fnTpl").value || "";
+  return FNT_OCR.filter(t => tpl.includes("{" + t + "}") && FN_CROPS[t].side === side);
+}
+function setOcrBadge(on){
+  const b = $("#badge");
+  b.textContent = on ? "联网OCR" : "不上传";
+  b.classList.toggle("warn", on);
+}
+function initFnOcr(){
+  $("#fnTpl").value  = localStorage.getItem("fnTpl")  || FNT_DEF;
+  $("#fnFix").value  = localStorage.getItem("fnFix")  || "";
+  $("#fnSeq").value  = localStorage.getItem("fnSeq")  || "1";
+  $("#ocrKey").value = localStorage.getItem("ocrKey") || "";
+  $("#ocrSecret").value = localStorage.getItem("ocrSecret") || "";
+  // 标签芯片
+  const tags = $("#fnTags");
+  FN_TAGS.forEach(t => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "tagb"; b.textContent = t;
+    b.onclick = () => {
+      const el = $("#fnTpl");
+      const at = el.selectionStart ?? el.value.length;
+      el.value = el.value.slice(0, at) + "{" + t + "}" + el.value.slice(el.selectionEnd ?? at);
+      el.focus(); el.selectionStart = el.selectionEnd = at + t.length + 2;
+      saveFn(); updateFnPrev();
+    };
+    tags.appendChild(b);
+  });
+  const saveFn = () => {
+    localStorage.setItem("fnTpl", $("#fnTpl").value.trim());
+    localStorage.setItem("fnFix", $("#fnFix").value.trim());
+    localStorage.setItem("fnSeq", String(Math.max(1, parseInt($("#fnSeq").value) || 1)));
+  };
+  ["fnTpl", "fnFix", "fnSeq"].forEach(id => $("#" + id).addEventListener("input", () => { saveFn(); updateFnPrev(); }));
+  ["ocrKey", "ocrSecret"].forEach(id => $("#" + id).addEventListener("change", e => localStorage.setItem(id, e.target.value.trim())));
+  $("#ckOcr").onchange = e => {
+    const on = e.target.checked;
+    if (on){
+      if (!$("#ocrKey").value.trim() || !$("#ocrSecret").value.trim()){
+        e.target.checked = false;
+        toast("先填百度 API Key / Secret Key（下方有获取说明）", true);
+        return;
+      }
+      if (!confirm("联网识别只会把模板里用到的字段小块图（如姓名那一行）上传到百度，整卡不外传。\n确定开启吗？")){
+        e.target.checked = false;
+        return;
+      }
+    }
+    OCR_ON = on;
+    localStorage.setItem("ocrOn", on ? "1" : "0");
+    setOcrBadge(on);
+    if (on) cards.forEach(queueOcr);
+    else { ocrQueue.length = 0; toast("已关闭联网识别，图片回到纯本地处理"); }
+  };
+  OCR_ON = localStorage.getItem("ocrOn") === "1";
+  if (OCR_ON && (!$("#ocrKey").value.trim() || !$("#ocrSecret").value.trim())) OCR_ON = false;
+  $("#ckOcr").checked = OCR_ON;
+  setOcrBadge(OCR_ON);
+  updateFnPrev();
+}
+
+async function exportPdf(){
+  if (!cards.length) return;
+  setBusy(true, "生成 PDF…");
+  await new Promise(r => setTimeout(r, 40));
+  try {
+    if (!window.jspdf || !window.jspdf.jsPDF) throw new Error("PDF 组件未加载");
+    const cv = buildSheet();
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
+    // 整页按 210×297mm 贴入 —— 卡面物理尺寸因此严格等于 85.6×54mm
+    const png = cv.toDataURL("image/jpeg", 0.94);
+    pdf.addImage(png, "JPEG", 0, 0, 210, 297, undefined, "FAST");
+    pdf.save(buildName("pdf"));
+    toast("PDF 已保存");
+  } catch (e) {
+    console.error(e);
+    toast("PDF 生成失败：" + (e.message || e), true);
+  }
+  setBusy(false);
+}
+
+async function exportImg(){
+  if (!cards.length) return;
+  setBusy(true, "生成图片…");
+  await new Promise(r => setTimeout(r, 40));
+  try {
+    const cv = buildSheet();
+    const blob = await new Promise(r => cv.toBlob(r, "image/jpeg", 0.94));
+    saveBlob(blob, buildName("jpg"));
+    toast(`图片已保存（${A4_W}×${A4_H}，300dpi）`);
+  } catch (e) {
+    toast("保存失败：" + (e.message || e), true);
+  }
+  setBusy(false);
+}
+
+async function doPrint(){
+  if (!cards.length) return;
+  setBusy(true, "准备打印…");
+  await new Promise(r => setTimeout(r, 40));
+  try {
+    const cv = buildSheet();
+    const img = $("#printImg");
+    await new Promise(res => {
+      img.onload = res;
+      img.onerror = res;
+      img.src = cv.toDataURL("image/jpeg", 0.96);
+    });
+    setBusy(false);
+    setTimeout(() => window.print(), 120);
+  } catch (e) {
+    setBusy(false);
+    toast("打印失败：" + (e.message || e), true);
+  }
+}
+
+/* ---------- 事件 ---------- */
+$("#btnAdd").onclick = () => $("#file").click();
+$("#file").onchange = e => {
+  const f = [...e.target.files];
+  e.target.value = "";
+  if (f.length) addFiles(f);
+};
+/* 桌面端：把「拍照」换成「扫描」。
+   这里既没有系统相机（capture 被忽略），也连不上扫描仪（TWAIN/WIA 是系统驱动，
+   浏览器没有任何访问途径），能做的只有选厂商软件导出的图片。
+   所以文案要写成用户实际会做的动作，否则点了「拍照」弹出文件框，会以为功能坏了。 */
+if (!IS_MOBILE) {
+  $("#camT").textContent = "扫描";
+  $("#addT").textContent = "图片";   // 电脑上没有「相册」这个概念
+  $("#camIco").outerHTML = '<svg id="camIco" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M2.5 12h19"/></svg>';
+  $("#tipCamLine").hidden = true;
+  $("#tipScanLine").hidden = false;
+  $("#emptySub").textContent = "人像面 + 国徽面各扫一张";
+}
+$("#btnCam").onclick = () => {
+  if (cards.length >= 2) return toast(IS_MOBILE ? "已经有 2 张了，先删掉一张再拍" : "已经有 2 张了，先删掉一张再选", true);
+  // 桌面端复用相册那个多选输入：扫描仪导出的本来就是文件，一次可能两面各一张
+  (IS_MOBILE ? $("#cam") : $("#file")).click();
+};
+$("#cam").onchange = e => {
+  const f = [...e.target.files];
+  e.target.value = "";
+  if (f.length) addFiles(f);
+};
+$("#btnPaste").onclick = async () => {
+  try {
+    if (!navigator.clipboard || !navigator.clipboard.read) throw new Error("no api");
+    const items = await navigator.clipboard.read();
+    for (const it of items) {
+      const t = it.types.find(x => x.startsWith("image/"));
+      if (t) {
+        const blob = await it.getType(t);
+        return addFiles([new File([blob], "粘贴的图片.png", { type: t })]);
+      }
+    }
+    toast("剪贴板里没有图片。网页无权直接读微信聊天（只有小程序可以），请在微信里复制图片后再来；手机端也可用「相册」选", true);
+  } catch (e) {
+    toast("浏览器不允许读剪贴板。网页无法直接读微信聊天，电脑端请在微信复制图片后按 Ctrl+V；手机端请先保存再用「相册」选", true);
+  }
+};
+document.addEventListener("paste", e => {
+  const f = [...(e.clipboardData ? e.clipboardData.files : [])];
+  if (f.length) { e.preventDefault(); addFiles(f); }
+});
+// 拖拽（桌面端顺手）
+["dragover", "drop"].forEach(t => document.addEventListener(t, e => {
+  e.preventDefault();
+  if (t === "drop" && e.dataTransfer) addFiles([...e.dataTransfer.files]);
+}));
+
+$("#ckWm").onchange = e => {
+  watermark = e.target.checked;
+  $("#wmBox").classList.toggle("show", watermark);
+  renderPreview();
+};
+$("#wmText").oninput = () => { if (watermark) renderPreview(); };
+$("#ckCut").onchange = e => { cutLines = e.target.checked; renderPreview(); };
+// 去阴影只影响自己这一层与下游（高对比度）；白平衡在它之前，不受影响
+$("#ckSh").onchange = e => {
+  SH = e.target.checked;
+  for (const c of cards){
+    c.shFor = null; c.sh = null;
+    c.hcFor = null; c.hcSide = null; c.hc = null;
+    c.thumb = eff(c).toDataURL("image/jpeg", 0.72);
+  }
+  renderCards(); renderPreview();
+};
+// 白平衡是链条最上游：它一换，去阴影和高对比度都要跟着重算
+$("#ckWb").onchange = e => {
+  WB = e.target.checked;
+  for (const c of cards){
+    c.wbGain = null; c.wbFor = null; c.cvWb = null;
+    c.shFor = null; c.sh = null;
+    c.hcFor = null; c.hcSide = null; c.hc = null;
+    c.thumb = eff(c).toDataURL("image/jpeg", 0.72);
+  }
+  renderCards(); renderPreview();
+};
+// 高对比度同理，只是多改了一层像素（eff 会按上游缓存，切白平衡后自动重算）
+$("#ckHc").onchange = e => {
+  HC = e.target.checked;
+  for (const c of cards) c.thumb = eff(c).toDataURL("image/jpeg", 0.72);
+  renderCards(); renderPreview();
+};
+$("#btnPdf").onclick = exportPdf;
+$("#btnImg").onclick = exportImg;
+$("#btnPrint").onclick = doPrint;
+
+// 点预览看大图（手机上 A4 缩略图只有 270px 宽，看不清卡面细节）
+function openFs(){
+  if (!cards.length) return;
+  $("#fsImg").src = buildSheet().toDataURL("image/jpeg", 0.9);
+  $("#fs").classList.add("show");
+  document.body.classList.add("fsopen");   // 提示条改挂顶部，别压住底部工具栏
+}
+function closeFs(){
+  $("#fs").classList.remove("show");
+  document.body.classList.remove("fsopen");
+}
+$("#paper").onclick = openFs;
+$("#fs").onclick = e => {
+  if (e.target.closest(".fsbtn")) return;   // 按钮不算「点空白」
+  closeFs();
+};
+addEventListener("keydown", e => {
+  if (e.key === "Escape"){
+    if ($("#fs").classList.contains("show")) closeFs();
+    if ($("#sheet").classList.contains("show")) $("#sheet").classList.remove("show");
+  }
+});
+
+/* ---------- 设置弹层：齿轮开，遮罩/完成/Esc 关 ---------- */
+$("#btnSet").onclick = () => $("#sheet").classList.add("show");
+$("#shBg").onclick = () => $("#sheet").classList.remove("show");
+$("#shClose").onclick = () => $("#sheet").classList.remove("show");
+initFnOcr();
+
+/* 复制整张 A4 到剪贴板。
+   只写 PNG：Chrome 的剪贴板只接受 image/png，写 JPEG 会直接抛错。
+   Safari 的规矩是 write() 必须在用户手势的同一 tick 里发起，且 ClipboardItem 的值可以是 Promise
+   —— 所以这里先同步构造 ClipboardItem 并调 write，把 toBlob 的 Promise 填进去，
+   绝不能先 await toBlob 再 write，否则 Safari 报 NotAllowedError。 */
+async function copySheet(){
+  if (!cards.length) return;
+  const btn = $("#fsCopy");
+  if (!window.ClipboardItem || !navigator.clipboard || !navigator.clipboard.write){
+    toast("这个浏览器不支持写剪贴板，请改用「保存图片」", true);
+    return;
+  }
+  btn.disabled = true;
+  try {
+    const cv = buildSheet();
+    const png = new Promise((res, rej) =>
+      cv.toBlob(b => b ? res(b) : rej(new Error("生成图片失败")), "image/png"));
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
+    toast("已复制，可直接粘贴到微信或文档");
+  } catch (e){
+    console.error(e);
+    const denied = e && (e.name === "NotAllowedError" || e.name === "SecurityError");
+    toast(denied ? "浏览器拒绝了剪贴板权限，请改用「保存图片」"
+                 : "复制失败：" + (e.message || e), true);
+  }
+  btn.disabled = false;
+}
+$("#fsCopy").onclick = copySheet;
+
+let rsz;
+window.addEventListener("resize", () => {
+  clearTimeout(rsz);
+  rsz = setTimeout(renderPreview, 120);
+});
+window.addEventListener("beforeprint", () => {});
+// 首屏
+renderCards();
+renderPreview();
 </script>
+<script src="./lib/jspdf.umd.min.js" defer></script>
 </body>
 </html>
