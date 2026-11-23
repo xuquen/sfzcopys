@@ -40,8 +40,9 @@
 
 **在线体验（免安装）**：
 
-- 项目主页（GitHub Pages，本仓库托管）：<https://xuquen.github.io/sfzcopys/>
-- 在线工具：<https://idcard-score.app.workbuddy.host/?sharecode=6HC62RJLEW>
+- **在线工具（GitHub Pages，本仓库托管，长期有效）**：<https://xuquen.github.io/sfzcopys/site/index.html>
+- 项目主页：<https://xuquen.github.io/sfzcopys/>
+- 备用入口（第三方托管，**不保证长期稳定**）：<https://idcard-score.app.workbuddy.host/?sharecode=6HC62RJLEW>
 - **离线包下载**（[Releases](https://github.com/xuquen/sfzcopys/releases/latest)）：
   [sfzcopys-site-v7.15.zip](https://github.com/xuquen/sfzcopys/releases/download/v7.15/sfzcopys-site-v7.15.zip)（2.4 MB，含模型，解压本地起 HTTP 即用）
 
