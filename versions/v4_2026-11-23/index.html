@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>身份证矫正 · 打分台</title>
+<link rel="icon" href="data:,">
+<style>
+:root{--bg:#14161a;--panel:#1c1f26;--panel2:#23272f;--line:#32373f;--txt:#e6e9ee;
+--dim:#8b939e;--ok:#2fbf71;--bad:#e5544b;--warn:#e0a53a;--acc:#4a9eff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+font:14px/1.55 -apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+header{position:sticky;top:0;z-index:30;background:#181b20f2;backdrop-filter:blur(10px);
+border-bottom:1px solid var(--line);padding:11px 16px;display:flex;flex-wrap:wrap;
+gap:10px;align-items:center}
+h1{font-size:15.5px;margin:0;font-weight:600}
+.hintbar{margin:10px 16px 0;padding:8px 12px;font-size:12px;line-height:1.7;color:#9aa4b0;
+background:#1a1f26;border:1px solid #2b333d;border-radius:8px}
+.hintbar b{color:#cfe8ff;font-weight:600}
+.stat{font-size:12px;color:var(--dim)}
+.stat b{color:var(--txt)}
+.spacer{flex:1}
+button{background:var(--panel2);color:var(--txt);border:1px solid var(--line);
+border-radius:7px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit}
+button:hover{border-color:#4a5058;background:#2a2f38}
+button:disabled{opacity:.45;cursor:default}
+button.primary{background:#2255aa;border-color:#2f6cd0}
+button.primary:hover{background:#2a63c4}
+button.on-ok{background:#1d5c3c;border-color:var(--ok);color:#d9ffe9}
+button.on-bad{background:#5c241f;border-color:var(--bad);color:#ffe0dd}
+button.on-sel{background:#3a2b16;border-color:#8a6a2a;color:#f0c274}
+button.mlon{background:#123a4d;border-color:#2f8ec4;color:#bfe9ff}
+.rotgrp{display:flex;gap:4px;align-items:stretch;border:1px solid var(--line);
+border-radius:8px;padding:2px;background:#191d23}
+.rotgrp button{padding:3px 9px;font-size:12px;border:none;background:transparent}
+.rotgrp button:hover{background:#2a2f38}
+.rotgrp button.on{background:#1e4a6d;color:#cfe8ff}
+.tab{padding:5px 11px;border-radius:14px;font-size:12.5px;border:1px solid var(--line);
+cursor:pointer;color:var(--dim);background:transparent}
+.tab.active{background:#2b3340;color:#fff;border-color:#4a5568}
+/* 问答区 */
+#ask{margin:14px 16px 0;background:#1a1f26;border:1px solid #2f4a63;border-radius:10px;overflow:hidden}
+#ask .hd{padding:9px 13px;background:#1d2a36;font-size:13px;font-weight:600;
+display:flex;align-items:center;gap:8px}
+#ask .hd span.tagq{font-size:11px;font-weight:400;color:#7fb6e8;background:#1b3purple}
+#ask .rows{padding:6px 13px 12px;display:flex;flex-direction:column;gap:9px}
+.q{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12.5px}
+.q .qt{color:#c3cbd6;min-width:0}
+.q .opts{display:flex;gap:5px;flex-wrap:wrap}
+.opt{font-size:12px;padding:3px 10px;border-radius:12px;border:1px solid #38414d;
+color:#9aa4b0;cursor:pointer;background:#20262e}
+.opt:hover{border-color:#5a6673}
+.opt.sel{background:#1e4a6d;border-color:#3d86c0;color:#cfe8ff}
+/* 拖放区 */
+#drop{margin:14px 16px;border:2px dashed #3a4450;border-radius:12px;padding:38px 20px;
+text-align:center;color:var(--dim);cursor:pointer;transition:.15s;background:#171a1f}
+#drop:hover,#drop.over{border-color:var(--acc);color:#cfe3ff;background:#18222e}
+#drop .big{font-size:15px;color:#cdd6e1;margin-bottom:6px}
+#drop .sm{font-size:12px}
+main{padding:6px 16px 70px;display:flex;flex-direction:column;gap:13px}
+.item{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.item.v-ok{border-color:#26603f}
+.item.v-bad{border-color:#6b2b26}
+.it-head{display:flex;align-items:center;gap:9px;padding:8px 12px;background:#1f232a;
+border-bottom:1px solid var(--line);flex-wrap:wrap}
+.idx{font-family:ui-monospace,monospace;font-size:11.5px;color:var(--dim);
+background:#2a2f38;padding:2px 7px;border-radius:5px}
+.fname{font-size:12px;color:#b6bec9;max-width:min(400px,44vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fbase{font-size:11px;color:#8fb8d8;font-family:ui-monospace,monospace;
+max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+background:#1b2733;border:1px solid #2b3f52;padding:1px 6px;border-radius:5px}
+.badge{font-size:11.5px;padding:2px 8px;border-radius:10px;border:1px solid transparent}
+.b-gold{background:#123a26;color:#7ce6a8;border-color:#2f6b4a}
+.steps{font-size:10.5px;color:#79828f;font-family:ui-monospace,monospace;
+padding:0 12px 6px;background:#1b1f25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.flash{outline:2px solid var(--acc);outline-offset:2px}
+.b-ok{background:#1a3f2b;color:#6fe0a0;border-color:#2b6a48}
+.b-warn{background:#42351a;color:#e8c274;border-color:#6b5426}
+.b-bad{background:#42201d;color:#f0938b;border-color:#6b2f2a}
+.b-unk{background:#2a2f38;color:var(--dim);border-color:#3a4048}
+.b-whole{background:#16293f;color:#7cc4f5;border-color:#2b5478}
+.metrics{display:flex;gap:5px;flex-wrap:wrap;margin-left:auto}
+.chip{font-family:ui-monospace,monospace;font-size:10.5px;color:#93a0ae;
+background:#242a33;border:1px solid #313943;padding:1px 6px;border-radius:5px}
+.chip.hi{color:#8fd3ff;border-color:#2f5375}
+.chip.warn{color:#ffcf7a;border-color:#6b5322;background:#2d2618}
+.body{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+.pane{background:#101317;position:relative;min-height:240px;display:flex;
+align-items:center;justify-content:center;padding:8px}
+.pane canvas{max-width:100%;max-height:400px;display:block;border-radius:3px}
+.pane .cap{position:absolute;left:8px;top:6px;font-size:10.5px;color:#6b7480;
+background:#000a;padding:1px 6px;border-radius:4px;pointer-events:none;z-index:2}
+.orig canvas{cursor:crosshair}
+/* 四角微调条 */
+.pane.orig{flex-direction:column;gap:7px;justify-content:flex-start}
+.nudge{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;
+width:100%;font-size:11.5px;color:var(--dim)}
+.nudge .csg,.nudge .pad,.nudge .stp{display:flex;gap:3px}
+.nudge button{background:#20242b;border:1px solid var(--line);color:#9aa4b0;
+border-radius:6px;padding:2px 7px;font-size:12px;line-height:1.5;cursor:pointer;font-family:inherit}
+.nudge button:hover{border-color:#4a5568;color:#dfe7f0}
+.nudge .cs.on{background:#3a2b16;border-color:#b08a2e;color:#ffd24a}
+.nudge .stp button.on{background:#1e4a6d;border-color:#3d86c0;color:#cfe8ff}
+.nudge .pad{display:grid;grid-template-columns:repeat(3,26px);
+grid-template-rows:repeat(2,24px);gap:2px}
+.nudge .pad button{padding:0;font-size:13px}
+.nudge .pad [data-nudge="u"]{grid-column:2;grid-row:1}
+.nudge .pad [data-nudge="l"]{grid-column:1;grid-row:2}
+.nudge .pad [data-nudge="d"]{grid-column:2;grid-row:2}
+.nudge .pad [data-nudge="r"]{grid-column:3;grid-row:2}
+.foot{padding:8px 12px;display:flex;gap:9px;align-items:center;flex-wrap:wrap;
+border-top:1px solid var(--line);background:#1b1f25}
+.tags{display:flex;gap:4px;flex-wrap:wrap}
+.tag{font-size:11px;padding:3px 9px;border-radius:11px;border:1px solid var(--line);
+color:var(--dim);cursor:pointer;user-select:none;background:#20242b}
+.tag:hover{border-color:#4a5058}
+.tag.sel{background:#3a2b16;border-color:#8a6a2a;color:#f0c274}
+.note{flex:1;min-width:130px;background:#20242b;border:1px solid var(--line);
+border-radius:6px;color:var(--txt);padding:4px 9px;font-size:12px;font-family:inherit}
+.note::placeholder{color:#5c646d}
+.side{display:flex;gap:4px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(90px);
+background:#2b6cd0;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;
+transition:transform .25s;z-index:99;box-shadow:0 6px 22px #0009;max-width:80vw}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#boot{position:fixed;inset:0;background:#14161a;display:flex;flex-direction:column;
+align-items:center;justify-content:center;gap:14px;z-index:200;color:#9aa4b0;font-size:14px}
+.spin{width:26px;height:26px;border:2.5px solid #2c3440;border-top-color:var(--acc);
+border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+#prog{width:min(420px,70vw);height:4px;background:#242a33;border-radius:2px;overflow:hidden}
+#prog>i{display:block;height:100%;width:0;background:var(--acc);transition:width .2s}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div id="boot"><div class="spin"></div><div id="bootTxt">正在初始化检测引擎…</div>
+<div id="prog"><i></i></div></div>
+
+<header>
+  <h1>身份证矫正 · 打分台</h1>
+  <span class="stat" id="stat"></span>
+  <div style="display:flex;gap:5px" id="tabs">
+    <div class="tab active" data-f="all">全部</div>
+    <div class="tab" data-f="bad">已标错</div>
+    <div class="tab" data-f="nodl">未存基准</div>
+  </div>
+  <div class="spacer"></div>
+  <button id="btnNext">→ 下一张未存</button>
+  <button id="btnPick">＋ 导入图片</button>
+  <button id="btnEngine" title="经典=纯几何启发式；ML=1.9MB 神经网络找框">引擎：经典</button>
+  <button id="btnRerunAll">全部重跑</button>
+  <button id="btnDlAll">下载全部矫正图</button>
+  <button id="btnCopy">复制反馈</button>
+  <button class="primary" id="btnExport">导出校正报告</button>
+  <input type="file" id="file" multiple accept="image/*" class="hidden">
+</header>
+<div class="hintbar">
+  ① 框不准 → 拖原图四角；<b>要精确调</b> → 点 ①②③④ 选角，再用 <b>↑←↓→</b> 微调（步长 1/5/20px）。
+  ② 方向不对 → <b>↺90° / ↻90° / 180° / 复位</b>；框对了但压扁拉宽 → <b>竖⇄横</b>。<br>
+  ③ <b>调好一张就点「存基准」</b>（绿色 GOLD），右上「→ 下一张未存」可以一路走完 20 张。基准框 = 我反推算法用的金标准。<br>
+  ④ 输出 1011×638、圆角 R=35px 透明角；下载文件名固定为 <b>序号_原文件名.png</b>，和列表序号一一对应，不会错位。<br>
+  ⑤ 本版检测：按身份证固有 1.585 比例生成候选 → 用「框里像不像卡面」打分 → 全分辨率收边。<br>
+  ⑥ 右上 <b>引擎：经典 / ML</b> 可切换。ML = 1.9MB 神经网络找框（首次加载约 3.5MB，全在本机跑，不上传），
+     「置信」是它的把握度；经典 = 纯几何启发式。切换后点「全部重跑」生效。
+     <b>切引擎会自动清空上一轮的标签/备注/判定</b>（基准保留）—— 不换引擎就沿用。<br>
+  ⑦ 卡把整幅画面拍满（照片本身就是一张卡）时，标 <b>整图即卡</b>，直接整图 + 圆角输出、不跑检测。<br>
+  ⑧ <b>同图多卡</b>：一张照片里躺着两张卡（身份证压着银行卡）时，ML 会拆成多条记录，徽标显示
+     <b>同图 2 卡 · 第 1</b>。同框的银行卡目前<b>不会自动剔除</b> —— 工银社保联名卡也是白底，
+     颜色/版面判据都分不开，只能先都拆出来由人点。<br>
+  ⑨ <b>面别自动预填</b>：人像面 / 国徽面按版面墨迹密度判，判不准就留「面别待定」，判错直接点按钮覆盖。
+</div>
+
+<section id="ask">
+  <div class="hd">❓ 需要你确认的几件事（点一下即可，会随报告一起回传给我）</div>
+  <div class="rows" id="askRows"></div>
+</section>
+
+<div id="drop">
+  <div class="big">把身份证照片拖到这里，或点击选择</div>
+  <div class="sm">支持多张 · 所有处理都在你本机浏览器完成，图片不会上传到任何服务器</div>
+</div>
+
+<main id="list"></main>
+<div id="toast"></div>
+
+<script>
+/* ================= 全局状态 ================= */
+const QS = [
+  {id:"q_flip",  t:"这批原图里，有没有整张倒着拍的（需要整体转 180°）？",
+   opts:["没有","有，少量","有，不少"]},
+  {id:"q_side",  t:"要不要我自动判断「人像面 / 国徽面」并排序？",
+   opts:["要，自动排","不用，我手动标","暂不需要"]},
+  {id:"q_dual",  t:"出现两张卡的图，哪种更多？",
+   opts:["叠放（压在一起）","并排","两种都有"]},
+  {id:"q_use",   t:"输出用途 / 版式？",
+   opts:["A4 拼版打印","6 寸相纸","只要单张卡面图"]},
+  {id:"q_wb",    t:"白平衡的要求？",
+   opts:["保持原色，只轻纠","可以更白净些","不要动颜色"]},
+  {id:"q_ocr",   t:"OCR 命名里有效期用哪种格式？",
+   opts:["2035.05.20","20350520","长期"]}
+];
+const TAGS = ["没检出","切歪/缺边","带背景残留","倒置180°","需转90°","竖卡方向错",
+  "多卡未拆","叠卡未剔除","白平衡过曝","其他"];
+const LS="idcard_score_v2";
+let state={q:{},items:{}};
+let CV_OK=false;
+const fileEl=document.getElementById("file");
+const listEl=document.getElementById("list");
+
+/* ================= 持久化 ================= */
+function save(){ try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){} }
+function load(){ try{const s=localStorage.getItem(LS); if(s) state=JSON.parse(s)}catch(e){} }
+function toast(m){const t=document.getElementById("toast");t.textContent=m;
+  t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),2800);}
+
+/* ================= 问答区 ================= */
+function renderAsk(){
+  const box=document.getElementById("askRows"); box.innerHTML="";
+  QS.forEach(q=>{
+    const d=document.createElement("div"); d.className="q";
+    d.innerHTML=`<span class="qt">${q.t}</span><span class="opts"></span>`;
+    const ops=d.querySelector(".opts");
+    q.opts.forEach(o=>{
+      const b=document.createElement("span"); b.className="opt"; b.textContent=o;
+      if(state.q[q.id]===o) b.classList.add("sel");
+      b.onclick=()=>{
+        state.q[q.id] = state.q[q.id]===o ? "" : o;
+        ops.querySelectorAll(".opt").forEach(x=>x.classList.remove("sel"));
+        if(state.q[q.id]) b.classList.add("sel");
+        save();
+      };
+      ops.appendChild(b);
+    });
+    box.appendChild(d);
+  });
+}
+
+/* ================= OpenCV 加载 ================= */
+function loadCV(){
+  return new Promise((res,rej)=>{
+    const s=document.createElement("script");
+    s.src="vendor/opencv.js";
+    s.onload=async()=>{
+      try{
+        let c=window.cv;
+        if(c&&typeof c.then==="function"){ c=await c; window.cv=c; }
+        if(c&&c.Mat) return res();
+        if(c&&c.onRuntimeInitialized){ c.onRuntimeInitialized=()=>res(); return; }
+        const t=setInterval(()=>{ if(window.cv&&window.cv.Mat){clearInterval(t);res();} },150);
+        setTimeout(()=>{clearInterval(t); (window.cv&&window.cv.Mat)?res():rej(new Error("timeout"))},90000);
+      }catch(e){ rej(e); }
+    };
+    s.onerror=()=>rej(new Error("load"));
+    document.head.appendChild(s);
+  });
+}
+
+/* ================= 几何工具 ================= */
+function orderPts(p){
+  const s=p.map(a=>a[0]+a[1]), d=p.map(a=>a[1]-a[0]);
+  const tl=p[s.indexOf(Math.min(...s))], br=p[s.indexOf(Math.max(...s))];
+  const tr=p[d.indexOf(Math.min(...d))], bl=p[d.indexOf(Math.max(...d))];
+  return [[tl[0],tl[1]],[tr[0],tr[1]],[br[0],br[1]],[bl[0],bl[1]]];
+}
+const CR=85.6/54.0;
+function geom(q,W,H){
+  let a=0; for(let i=0;i<4;i++){const [x1,y1]=q[i],[x2,y2]=q[(i+1)%4]; a+=x1*y2-x2*y1;}
+  a=Math.abs(a)/2;
+  const d=(p,r)=>Math.hypot(p[0]-r[0],p[1]-r[1]);
+  const ew=(d(q[1],q[0])+d(q[2],q[3]))/2, eh=(d(q[3],q[0])+d(q[2],q[1]))/2;
+  // r 带方向：横版卡 ≈1.585，竖拍卡 ≈0.631。绝不能写成 max/min，否则 vert 恒 false
+  const r=ew/Math.max(1e-6,eh);
+  const dl=Math.abs(Math.log(r/CR));       // 离"未旋转"的距离
+  const dp=Math.abs(Math.log(r*CR));       // 离"转了90°"的距离
+  const rb=Math.max(r,1/r);                // 无方向的比例，只用于打分惩罚
+  return {area:a/(W*H), rbox:rb, ar:Math.min(dl,dp), vert:dp<dl, ew, eh, r};
+}
+
+/* ================= 纯 JS 检测（无外部依赖） ================= */
+function detect(canvas){
+  const S=Math.min(1, 760/Math.max(canvas.width,canvas.height));
+  const w=Math.max(16,Math.round(canvas.width*S)), h=Math.max(16,Math.round(canvas.height*S));
+  const off=document.createElement("canvas"); off.width=w; off.height=h;
+  const octx=off.getContext("2d",{willReadFrequently:true});
+  octx.drawImage(canvas,0,0,w,h);
+  const px=octx.getImageData(0,0,w,h).data;
+  const N=w*h;
+  const gray=new Uint8Array(N), sat=new Uint8Array(N), val=new Uint8Array(N);
+  const hist=new Uint32Array(256);
+  for(let i=0,p=0;i<N;i++,p+=4){
+    const r=px[p],g=px[p+1],b=px[p+2];
+    const v=r>g?(r>b?r:b):(g>b?g:b), mn=r<g?(r<b?r:b):(g<b?g:b);
+    val[i]=v; sat[i]= v?(((v-mn)*255/v)|0):0;
+    const gy=(0.299*r+0.587*g+0.114*b)|0;
+    gray[i]=gy; hist[gy]++;
+  }
+  const pctT=q=>{let acc=0;const t=N*q;
+    for(let i=0;i<256;i++){acc+=hist[i];if(acc>=t)return i;} return 255;};
+  const gxI=new Int16Array(N), gyI=new Int16Array(N);
+  for(let y=1;y<h-1;y++){
+    const r0=y*w;
+    for(let x=1;x<w-1;x++){
+      const i=r0+x;
+      gxI[i]=gray[i+1]-gray[i-1];
+      gyI[i]=gray[i+w]-gray[i-w];
+    }
+  }
+  const cands=[], seenK=new Set();
+  let loose=null;
+  const pushQ=(raw,hull)=>{
+    if(!raw) return;
+    const q=orderPts(raw), g=geom(q,w,h);
+    if(g.area<0.04||g.area>0.995||g.ar>0.45) return;
+    // 大半在画面外的候选没有意义：包围盒与画面的交集占比太低就直接丢
+    const xs=q.map(p=>p[0]), ys=q.map(p=>p[1]);
+    const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+    const bw=Math.max(1,x1-x0), bh=Math.max(1,y1-y0);
+    const iw=Math.min(x1,w)-Math.max(x0,0), ih=Math.min(y1,h)-Math.max(y0,0);
+    if(iw<=0||ih<=0) return;
+    if((iw*ih)/(bw*bh)<0.62) return;
+    cands.push({q,g,hull});
+  };
+  const masks=[];
+  [0.55,0.65,0.75,0.85,0.92].forEach(p=>{
+    const t=pctT(p), m=new Uint8Array(N);
+    for(let i=0;i<N;i++) m[i]=gray[i]>t?1:0;
+    masks.push(m);
+  });
+  [[68,105],[90,85],[110,70]].forEach(([st,vt])=>{
+    const m=new Uint8Array(N);
+    for(let i=0;i<N;i++) m[i]=(sat[i]<st&&val[i]>vt)?1:0;
+    masks.push(m);
+  });
+  masks.forEach(m=>{
+    const comps=components(m,w,h,w*h*0.004);
+    const seeds=comps.slice(0,8);
+    seeds.forEach(cp=>{
+      const hull=convexHull(cp.pts);
+      if(hull.length<4) return;
+      const lr=minAreaRect(hull);
+      pushQ(lr,hull); pushQ(hullQuad(hull),hull);
+      if(lr){
+        const cx=(lr[0][0]+lr[2][0])/2, cy=(lr[0][1]+lr[2][1])/2;
+        const e1=Math.hypot(lr[1][0]-lr[0][0],lr[1][1]-lr[0][1]);
+        const e2=Math.hypot(lr[3][0]-lr[0][0],lr[3][1]-lr[0][1]);
+        const longE=Math.max(e1,e2);
+        let ang=e1>=e2?Math.atan2(lr[1][1]-lr[0][1],lr[1][0]-lr[0][0])
+                      :Math.atan2(lr[3][1]-lr[0][1],lr[3][0]-lr[0][0]);
+        // hull 常是碎块拼出来的，minAreaRect 角度会完全失真（实测出现过 45° 斜框）。
+        // 实拍身份证极少超过 30°，超出说明这个角度不可信，吸附到最近的坐标轴。
+        const axis=Math.round(ang/(Math.PI/2))*(Math.PI/2);
+        if(Math.abs(ang-axis)>Math.PI/6) ang=axis;
+        // 身份证比例是固定的，直接按 1.585 生成横/竖两种候选，比等凸包自己长成什么样可靠
+        pushQ(rectByAR(cx,cy,ang,longE),hull);
+        pushQ(rectByAR(cx,cy,ang+Math.PI/2,longE),hull);
+        pushQ(rectByAR(cx,cy,ang,longE*1.03),hull);
+        pushQ(rectByAR(cx,cy,ang+Math.PI/2,longE*1.03),hull);
+      }
+      if(!loose){
+        const lq=lr?orderPts(lr):null;
+        if(lq){ const lg=geom(lq,w,h); if(lg.area>0.03) loose={q:lq,g:lg}; }
+      }
+    });
+    // 卡面常被人像/文字切成碎块，把邻近碎块并起来还原整张卡
+    const gap=0.055*Math.max(w,h);
+    if(seeds.length>1) for(let i=0;i<seeds.length;i++){
+      const A=seeds[i], [ax0,ay0,ax1,ay1]=A.bbox;
+      const pts=A.pts.slice(); let tot=A.area;
+      for(let j=0;j<seeds.length;j++){
+        if(j===i) continue;
+        const B=seeds[j], [bx0,by0,bx1,by1]=B.bbox;
+        const dx=Math.max(0,Math.max(ax0-bx1,bx0-ax1));
+        const dy=Math.max(0,Math.max(ay0-by1,by0-ay1));
+        if(Math.hypot(dx,dy)<gap){ for(const p of B.pts) pts.push(p); tot+=B.area; }
+      }
+      if(tot>A.area*1.12){
+        const hull=convexHull(pts);
+        if(hull.length>=4){ pushQ(minAreaRect(hull),hull); pushQ(hullQuad(hull),hull); }
+      }
+    }
+  });
+  if(!cands.length){
+    if(loose) return {quad:loose.q.map(p=>[p[0]/w,p[1]/h]),
+      metrics:{area:loose.g.area,ar:loose.g.ar,es:0,smean:0,sstd:0,gmean:0,score:-9},
+      is_vertical:loose.g.vert, ncand:0, fallback:true};
+    const ins=0.01, fq=[[ins,ins],[1-ins,ins],[1-ins,1-ins],[ins,1-ins]];
+    return {quad:fq, metrics:{area:0.98,ar:0,es:0,smean:0,sstd:0,gmean:0,score:-9},
+      is_vertical:false, ncand:0, fallback:true};
+  }
+  const uniq=[];
+  for(const c of cands){
+    const k=c.q.map(p=>`${Math.round(p[0]/5)},${Math.round(p[1]/5)}`).join("|");
+    if(seenK.has(k)) continue; seenK.add(k); uniq.push(c);
+  }
+  const top=uniq.slice(0,40);
+  const scored=[];
+  for(const {q,g,hull} of top){
+    let hit=0,tot=0;
+    for(let i=0;i<4;i++){
+      const [x1,y1]=q[i],[x2,y2]=q[(i+1)%4];
+      const vx=x2-x1, vy=y2-y1, L=Math.hypot(vx,vy);
+      if(L<20) continue;
+      const nx=-vy/L, ny=vx/L;
+      const steps=Math.max(20,Math.min(80,Math.round(L/3)));
+      for(let k=1;k<steps;k++){
+        const t=k/steps, x=x1+vx*t, y=y1+vy*t;
+        let bi=0;
+        for(let o=-2;o<=2;o++){
+          const xx=Math.round(x+nx*o), yy=Math.round(y+ny*o);
+          if(xx>0&&yy>0&&xx<w-1&&yy<h-1){
+            const v=Math.abs(gxI[yy*w+xx])*Math.abs(nx)+Math.abs(gyI[yy*w+xx])*Math.abs(ny);
+            if(v>bi) bi=v;
+          }
+        }
+        tot++; if(bi>18) hit++;
+      }
+    }
+    const es=tot?hit/tot:0;
+    const xs=q.map(p=>p[0]), ys=q.map(p=>p[1]);
+    const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+    const ix0=x0+(x1-x0)*0.12, ix1=x1-(x1-x0)*0.12;
+    const iy0=y0+(y1-y0)*0.12, iy1=y1-(y1-y0)*0.12;
+    const step=Math.max(2,Math.round((ix1-ix0)/44));
+    let n=0,ok=0,ss=0,sq=0,gs=0;
+    for(let y=iy0;y<iy1;y+=step){
+      for(let x=ix0;x<ix1;x+=step){
+        if(!inPoly(x,y,q)) continue;
+        const i=(y|0)*w+(x|0);
+        n++; ss+=sat[i]; sq+=sat[i]*sat[i]; gs+=gray[i];
+        if(gray[i]>110&&sat[i]<95) ok++;
+      }
+    }
+    const inside=n?ok/n:0;
+    const smean=n?ss/n/255:0.4, sstd=n?Math.sqrt(Math.max(0,sq/n-(ss/n)**2))/255:0.2;
+    const gmean=n?gs/n/255:0.5;
+    // 卡面是"亮+低饱和"的一大片；框进背景(木纹/桌布)inside 会立刻掉下来
+    let sc=1.0*es + 2.0*(1-Math.min(1,g.ar/0.08)) + 2.5*g.area + 3.0*inside;
+    if(es<0.22) sc-=1.2;
+    if(inside<0.55) sc-=3.0;
+    scored.push({q,g,es,inside,smean,sstd,gmean,sc,hull});
+  }
+  scored.sort((a,b)=>b.sc-a.sc);
+  let best=scored[0];
+  // 整图就是一张卡（截图/已裁好）：图比例≈卡片比例，且四周没有可信的卡边
+  const imgR=w/h;
+  const nearCard=Math.min(Math.abs(Math.log(imgR/CR)),Math.abs(Math.log(imgR*CR)))<0.05;
+  const tinyPure=best.g.area<0.15&&best.inside>0.95;
+  if(nearCard&&(best.es<0.20||tinyPure)){
+    const ins=0.008;
+    return {quad:[[ins,ins],[1-ins,ins],[1-ins,1-ins],[ins,1-ins]],
+      metrics:{area:0.984,ar:0,es:0.9,smean:best.smean,sstd:best.sstd,gmean:best.gmean,score:5},
+      is_vertical:imgR<1, ncand:uniq.length, wholeImage:true};
+  }
+  // 收边 + 按 1.585 重拟合 + 约束在画面内
+  let qf=best.q, gf=best.g;
+  const s2=snapBox(best.q,gxI,gyI,w,h,0.09,2);
+  const g2r=geom(s2,w,h);
+  const s3r=g2r.ar>0.10?fitAR(s2,best.g.r,w,h):s2;
+  const s3=fitInside(s3r,w,h);
+  const g2=geom(s3,w,h);
+  if(g2.area>0.03&&g2.area<0.999&&g2.area>0.55*best.g.area&&g2.area<1.6*best.g.area){
+    qf=s3; gf=g2;
+  }
+  if(window.__DBG) window.__dbg={ncand:uniq.length,
+    list:scored.slice(0,8).map(d=>({A:d.g.area,ar:d.g.ar,es:d.es,inside:d.inside,sc:d.sc}))};
+  return {quad:qf.map(p=>[clamp01(p[0]/w),clamp01(p[1]/h)]),
+    metrics:{area:gf.area,ar:gf.ar,es:best.es,smean:best.smean,
+             sstd:best.sstd,gmean:best.gmean,score:best.sc},
+    // 用最终框重算竖横：gf 可能是收边前的候选，与 qf 不同口径
+    is_vertical:geom(qf,w,h).vert, ncand:uniq.length};
+}
+/* ================= ML 检测（DocCornerNet LEAN 1.9MB，懒加载） =================
+   模型只管"框在哪"：输入拉成 224×224（不 letterbox），输出 4 角归一化坐标 + 置信度。
+   方向/正倒仍由本页原有判据与人工兜底负责，模型不参与。 */
+let ENGINE = (localStorage.getItem("engine") === "ml") ? "ml" : "classic";
+let _scanicP = null;
+function loadScanic(){
+  if(!_scanicP) _scanicP = import("./ml/scanic.js").catch(e=>{ _scanicP=null; throw e; });
+  return _scanicP;
+}
+async function detectML(canvas){
+  const mod = await loadScanic();
+  // 必须给绝对 URL：ORT 会相对 mlDetector 自身位置再拼一次，用 "./ml/" 会变成 /ml/ml/
+  const base = new URL("./ml/", location.href).href;
+  const res = await mod.scanDocument(canvas, { detector:"ml", ml:{ assetBaseUrl:base } });
+  if(!res || !res.success || !res.corners) return null;
+  const W=canvas.width, H=canvas.height, c=res.corners;
+  const seq=[c.topLeft,c.topRight,c.bottomRight,c.bottomLeft];
+  if(seq.some(p=>!p || !isFinite(p.x) || !isFinite(p.y))) return null;
+  // geom 吃的是像素坐标，先按像素算指标再归一化，否则面积/比例全是错的
+  const qpx=seq.map(p=>[p.x,p.y]);
+  const g=geom(qpx,W,H);
+  const q=qpx.map(p=>[clamp01(p[0]/W), clamp01(p[1]/H)]);
+  return {quad:q,
+    metrics:{area:g.area, ar:g.ar, es:0, smean:0, sstd:0, gmean:0, score:res.score||0},
+    is_vertical:g.vert, ncand:4, engine:"ml"};
+}
+// 统一入口：按当前引擎取框，ML 失手则回退经典，并把实际用的引擎记在返回里
+// 自动收紧默认关闭：实测它修不了那 2px 的"裁多了"，却会把 5 张好图咬掉（20/20→15/20）。
+// 代码留着，加 ?tight=1 可以开出来继续试验。
+let TIGHTEN = /[?&]tight=1/.test(location.search);
+async function detectAny(canvas){
+  if(ENGINE==="ml"){
+    const wc=wholeCard(canvas);                        // 卡拍满整幅 → 整图就是卡，不必找框
+    if(wc){
+      const q=[[0,0],[1,0],[1,1],[0,1]];
+      const g=geom(q.map(p=>[p[0]*canvas.width,p[1]*canvas.height]),canvas.width,canvas.height);
+      return {quad:q,
+        metrics:{area:g.area, ar:g.ar, es:0, smean:0, sstd:0, gmean:0, score:1},
+        is_vertical:g.vert, ncand:0, engine:"whole", whole:{iar:wc.iar, dist:wc.dist}};
+    }
+    try{
+      const r=await detectML(canvas);
+      if(r){
+        if(TIGHTEN && r.quad){                         // 只向内收，修"框比卡大一圈"
+          const t=tightenQuad(canvas,r.quad);
+          if(t && t!==r.quad){
+            r.quad=t;
+            r.is_vertical=vertOf(t,canvas.width,canvas.height);
+          }
+        }
+        return r;
+      }
+      console.warn("[ML] 未检出，回退经典");
+    }catch(e){ console.warn("[ML] 出错，回退经典", e); }
+    const r2=detect(canvas);
+    if(r2) r2.engine="classic-fallback";
+    return r2;
+  }
+  const r=detect(canvas);
+  if(r) r.engine="classic";
+  return r;
+}
+
+// 在原始分辨率上再收一次边。检测跑在 760px 的缩略图上，1px 误差≈原图 2.4px，
+// 最后这一步用高分辨率梯度把四条边钉准，专治"带一点背景""切掉一点边"。
+// 按归一化框 + 画布尺寸判竖横（refine 会改框形，必须重算）
+function vertOf(q,W,H){
+  const d=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+  const ew=(d(q[1],q[0])+d(q[2],q[3]))/2*W, eh=(d(q[3],q[0])+d(q[2],q[1]))/2*H;
+  const r=ew/Math.max(1e-6,eh);
+  return Math.abs(Math.log(r*CR))<Math.abs(Math.log(r/CR));
+}
+/* 灰度 + 梯度（refineQuad / tightenQuad 共用；长边缩到 maxSide 以内再算） */
+function grayGrad(canvas,maxSide){
+  const ws=canvas.width, hs=canvas.height;
+  const S=Math.min(1, maxSide/Math.max(ws,hs));
+  const w=Math.max(16,Math.round(ws*S)), h=Math.max(16,Math.round(hs*S));
+  let cv=canvas;
+  if(S<1){
+    cv=document.createElement("canvas"); cv.width=w; cv.height=h;
+    cv.getContext("2d").drawImage(canvas,0,0,w,h);
+  }
+  const d=cv.getContext("2d",{willReadFrequently:true}).getImageData(0,0,w,h).data;
+  const N=w*h, gray=new Uint8Array(N);
+  for(let i=0,p=0;i<N;i++,p+=4) gray[i]=(0.299*d[p]+0.587*d[p+1]+0.114*d[p+2])|0;
+  const gx=new Int16Array(N), gy=new Int16Array(N);
+  for(let y=1;y<h-1;y++){
+    const r0=y*w;
+    for(let x=1;x<w-1;x++){ const i=r0+x; gx[i]=gray[i+1]-gray[i-1]; gy[i]=gray[i+w]-gray[i-w]; }
+  }
+  return {w,h,gx,gy,gray};
+}
+/* 「整图即卡」：卡把整幅画面拍满了，四周没有背景可依 —— 此时再让模型找框只会画歪。
+   判据两条同时满足（两条都留余量，宁可不命中也不误伤）：
+     ① 整图长宽比离 1.585 不到 4%  ② 外框 4% 环带的颜色与核心区差距 <100
+   实测 20 张：本类的两张 0.4%/34、2.8%/66；最接近的干扰项（带黑边的截图）4.8%/195。
+   注意正例只有 2 个，样本很薄 —— 阈值刻意收得紧。 */
+function wholeCard(canvas){
+  const W=canvas.width, H=canvas.height;
+  const iar=Math.max(W,H)/Math.min(W,H);
+  if(Math.abs(iar/CR-1)>0.04) return null;
+  const S=Math.min(1,400/Math.max(W,H));
+  const w=Math.max(16,Math.round(W*S)), h=Math.max(16,Math.round(H*S));
+  let cv=canvas;
+  if(S<1){
+    cv=document.createElement("canvas"); cv.width=w; cv.height=h;
+    cv.getContext("2d").drawImage(canvas,0,0,w,h);
+  }
+  const d=cv.getContext("2d",{willReadFrequently:true}).getImageData(0,0,w,h).data;
+  const bx=Math.max(2,Math.round(w*0.04)), by=Math.max(2,Math.round(h*0.04));
+  const mx=Math.round(w*0.15), my=Math.round(h*0.15);
+  let r1=0,g1=0,b1=0,n1=0, r2=0,g2=0,b2=0,n2=0;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const p=(y*w+x)*4;
+    if(x<bx||y<by||x>=w-bx||y>=h-by){ r1+=d[p];g1+=d[p+1];b1+=d[p+2];n1++; }
+    else if(x>=mx&&y>=my&&x<w-mx&&y<h-my){ r2+=d[p];g2+=d[p+1];b2+=d[p+2];n2++; }
+  }
+  if(!n1||!n2) return null;
+  const dist=Math.hypot(r1/n1-r2/n2, g1/n1-g2/n2, b1/n1-b2/n2);
+  if(dist>=100) return null;
+  return {iar, dist};
+}
+/* 只向内收边：模型给的框常常把卡外的一圈背景也框进来（"裁多了"）。
+   但无脑收边会把好框咬掉一圈 —— 实测 20 张从 20/20 掉到 15/20，因为卡面内部
+   文字/花纹的梯度比卡边还强，能量最大点常落在卡里面。所以加了两道门控：
+     ① 这条边外侧（+4px）必须比内侧（-4px）明显更暗 —— 外侧真的是背景
+     ② 收进来的位置能量要比当前边强 1.6 倍，才算找到了卡边
+   两条任一不满足就不动这条边。只会收紧，不会放大。 */
+function tightenQuad(canvas,quad){
+  const {w,h,gx,gy,gray}=grayGrad(canvas,1400);
+  const med=a=>{ if(!a.length) return 0; a.sort((x,y)=>x-y); return a[a.length>>1]; };
+  const at=(x,y)=>{const xx=Math.round(x),yy=Math.round(y);
+    return (xx>0&&yy>0&&xx<w&&yy<h)?gray[yy*w+xx]:-1;};
+  let out=quad.map(p=>[p[0]*w,p[1]*h]);
+  const range=Math.max(2,Math.round(Math.max(w,h)*0.02));
+  for(let it=0;it<2;it++){
+    for(let i=0;i<4;i++){
+      const a=out[i], b=out[(i+1)%4];
+      const vx=b[0]-a[0], vy=b[1]-a[1], L=Math.hypot(vx,vy);
+      if(L<8) continue;
+      let nx=-vy/L, ny=vx/L;
+      const cx=(out[0][0]+out[1][0]+out[2][0]+out[3][0])/4;
+      const cy=(out[0][1]+out[1][1]+out[2][1]+out[3][1])/4;
+      const mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2;
+      if((mx-cx)*nx+(my-cy)*ny<0){ nx=-nx; ny=-ny; }   // n 朝外
+      // 门控①：外侧更暗才算"框住了背景"
+      const outer=[],inner=[];
+      for(let k=1;k<8;k++){
+        const t=k/8;
+        const soi=at(a[0]+vx*t+nx*4, a[1]+vy*t+ny*4); if(soi>=0) outer.push(soi);
+        const sii=at(a[0]+vx*t-nx*4, a[1]+vy*t-ny*4); if(sii>=0) inner.push(sii);
+      }
+      const mo=med(outer), mi=med(inner);
+      if(!(mo>0&&mi>0&&mo<mi*0.80)) continue;
+      const e0=edgeEnergy(out,i,0,nx,ny,gx,gy,w,h);
+      let bestD=0, bestE=-1;
+      for(let d=-range;d<=-1;d++){                       // 只往内搜
+        const e=edgeEnergy(out,i,d,nx,ny,gx,gy,w,h);
+        if(e>bestE){ bestE=e; bestD=d; }
+      }
+      // 门控②：能量得明显更强才算卡边
+      if(bestD<=-1 && bestE>e0*1.6){
+        out[i]=[a[0]+nx*bestD, a[1]+ny*bestD];
+        out[(i+1)%4]=[b[0]+nx*bestD, b[1]+ny*bestD];
+      }
+    }
+  }
+  out=orderPts(out);
+  const g0=geom(quad.map(p=>[p[0]*w,p[1]*h]),w,h), g1=geom(out,w,h);
+  if(!(g1.area>0.03&&g1.area<0.999)) return quad;
+  if(g1.area>g0.area*1.002) return quad;               // 只许收不许放
+  return out.map(p=>[clamp01(p[0]/w),clamp01(p[1]/h)]);
+}
+function refineQuad(canvas,quad){
+  const {w,h,gx,gy}=grayGrad(canvas,1400);
+  const qpx=quad.map(p=>[p[0]*w,p[1]*h]);
+  const q2=snapBox(qpx,gx,gy,w,h,0.025,2);
+  const g2=geom(q2,w,h);
+  const fin=g2.ar>0.10?fitAR(q2,g2.r,w,h):fitInside(q2,w,h);
+  const g3=geom(fin,w,h);
+  if(!(g3.area>0.03&&g3.area<0.999)) return quad;
+  return fin.map(p=>[clamp01(p[0]/w),clamp01(p[1]/h)]);
+}
+
+/* 凸包的四角（对角线极值，能贴合透视梯形） */
+function hullQuad(hull){
+  let tl=hull[0],br=hull[0],tr=hull[0],bl=hull[0];
+  let a1=Infinity,a2=-Infinity,a3=-Infinity,a4=Infinity;
+  for(const p of hull){
+    const s=p[0]+p[1], d=p[1]-p[0];
+    if(s<a1){a1=s;tl=p;} if(s>a2){a2=s;br=p;}
+    if(d<a3){a3=d;tr=p;} if(d>a4){a4=d;bl=p;}
+  }
+  const set=new Set([tl,br,tr,bl]);
+  if(set.size<4) return null;
+  return [tl,tr,br,bl].map(p=>[p[0],p[1]]);
+}
+/* ---- 候选生成/收边的辅助 ---- */
+// 以中心+方向+长边生成强制 1.585 的矩形（身份证固有比例，比任何启发式都硬）
+function rectByAR(cx,cy,ang,longEdge){
+  const ex=Math.cos(ang), ey=Math.sin(ang), pxv=-ey, pyv=ex;
+  const hl=longEdge/2, hs=longEdge/CR/2;
+  return [[-hl,-hs],[hl,-hs],[hl,hs],[-hl,hs]].map(([u,v])=>[cx+u*ex+v*pxv, cy+u*ey+v*pyv]);
+}
+// 单条边的"贯穿性"能量：沿边采样取每点法向最大梯度，再取中位数。
+// 卡边是贯穿整条边的，文字/花纹只在局部强 —— 用均值会被局部强边带偏。
+function edgeEnergy(q,i,d,nx,ny,gxI,gyI,w,h){
+  const a=q[i], b=q[(i+1)%4];
+  const vx=b[0]-a[0], vy=b[1]-a[1], L=Math.hypot(vx,vy);
+  if(L<8) return 0;
+  const steps=Math.max(18,Math.min(80,Math.round(L/3)));
+  const vals=[];
+  for(let k=1;k<steps;k++){
+    const t=k/steps, x=a[0]+vx*t+nx*d, y=a[1]+vy*t+ny*d;
+    let bi=0;
+    for(let o=-2;o<=2;o++){
+      const xx=Math.round(x+nx*o), yy=Math.round(y+ny*o);
+      if(xx>0&&yy>0&&xx<w-1&&yy<h-1){
+        const v=Math.abs(gxI[yy*w+xx])*Math.abs(nx)+Math.abs(gyI[yy*w+xx])*Math.abs(ny);
+        if(v>bi) bi=v;
+      }
+    }
+    vals.push(bi);
+  }
+  if(!vals.length) return 0;
+  vals.sort((x,y)=>x-y);
+  return vals[vals.length>>1];
+}
+// 四边各自沿法向吸附到梯度最强的位置，修"框大一圈/小一圈"
+function snapBox(q,gxI,gyI,w,h,frac,iters){
+  const out=q.map(p=>[p[0],p[1]]);
+  for(let it=0;it<iters;it++){
+    for(let i=0;i<4;i++){
+      const a=out[i], b=out[(i+1)%4];
+      let vx=b[0]-a[0], vy=b[1]-a[1], L=Math.hypot(vx,vy);
+      if(L<8) continue;
+      let nx=-vy/L, ny=vx/L;
+      const cx=(out[0][0]+out[1][0]+out[2][0]+out[3][0])/4;
+      const cy=(out[0][1]+out[1][1]+out[2][1]+out[3][1])/4;
+      const mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2;
+      if((mx-cx)*nx+(my-cy)*ny<0){ nx=-nx; ny=-ny; }
+      const range=Math.max(2,Math.round(L*frac));
+      let bestD=0, bestE=-1;
+      for(let d=-range;d<=range;d++){
+        const e=edgeEnergy(out,i,d,nx,ny,gxI,gyI,w,h);
+        if(e>bestE){ bestE=e; bestD=d; }
+      }
+      if(Math.abs(bestD)>=1){
+        out[i]=[a[0]+nx*bestD, a[1]+ny*bestD];
+        out[(i+1)%4]=[b[0]+nx*bestD, b[1]+ny*bestD];
+      }
+    }
+  }
+  return orderPts(out);
+}
+// 收边后形状会歪，按 1.585 重新拟合（rHint 来自原框，保住横竖）
+const clamp01=v=>v<0?0:(v>1?1:v);
+function fitAR(q,rHint,w,h){
+  const c=[(q[0][0]+q[1][0]+q[2][0]+q[3][0])/4,(q[0][1]+q[1][1]+q[2][1]+q[3][1])/4];
+  const d=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+  const e1=(d(q[1],q[0])+d(q[2],q[3]))/2, e2=(d(q[3],q[0])+d(q[2],q[1]))/2;
+  const land=rHint>=1;
+  const longE=land?e1:e2, shortE=land?e2:e1;
+  // 必须有上限。框斜 45° 时 e1≈e2，(longE+shortE*CR)/2 会把长边抬到 1.29 倍，
+  // 每跑一次救大一圈 —— 这是框越出画面的根源。
+  const L=Math.min((longE+shortE*CR)/2, Math.max(longE,shortE*CR));
+  const ang=land?Math.atan2(q[1][1]-q[0][1],q[1][0]-q[0][0])
+                :Math.atan2(q[3][1]-q[0][1],q[3][0]-q[0][0]);
+  const out=rectByAR(c[0],c[1],ang,L);
+  return (w&&h)?fitInside(out,w,h):out;
+}
+function fitInside(q,w,h){
+  const xs=q.map(p=>p[0]), ys=q.map(p=>p[1]);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const bw=x1-x0, bh=y1-y0;
+  const sc=Math.min(1,(w-2)/Math.max(1,bw),(h-2)/Math.max(1,bh));
+  if(sc>=1){
+    let dx=0,dy=0;
+    if(x0<1) dx=1-x0; else if(x1>w-1) dx=w-1-x1;
+    if(y0<1) dy=1-y0; else if(y1>h-1) dy=h-1-y1;
+    return q.map(p=>[p[0]+dx,p[1]+dy]);
+  }
+  const cx=(x0+x1)/2, cy=(y0+y1)/2;
+  return q.map(p=>[cx+(p[0]-cx)*sc, cy+(p[1]-cy)*sc]);
+}
+
+function components(m,w,h,minAArg){
+  const lab=new Int32Array(w*h).fill(-1);
+  const stack=new Int32Array(w*h);
+  const out=[];
+  const minA=minAArg||w*h*0.006;
+  let id=0;
+  for(let s=0;s<w*h;s++){
+    if(m[s]!==1||lab[s]!==-1) continue;
+    let sp=0; stack[sp++]=s; lab[s]=id;
+    let area=0; const pts=[]; let bx0=1e9,by0=1e9,bx1=-1e9,by1=-1e9;
+    while(sp>0){
+      const p=stack[--sp];
+      const x=p%w, y=(p-x)/w;
+      area++;
+      if(x<bx0)bx0=x; if(x>bx1)bx1=x; if(y<by0)by0=y; if(y>by1)by1=y;
+      if(x===0||y===0||x===w-1||y===h-1||m[p-1]!==1||m[p+1]!==1||m[p-w]!==1||m[p+w]!==1) pts.push([x,y]);
+      if(x>0&&m[p-1]===1&&lab[p-1]===-1){lab[p-1]=id;stack[sp++]=p-1;}
+      if(x<w-1&&m[p+1]===1&&lab[p+1]===-1){lab[p+1]=id;stack[sp++]=p+1;}
+      if(y>0&&m[p-w]===1&&lab[p-w]===-1){lab[p-w]=id;stack[sp++]=p-w;}
+      if(y<h-1&&m[p+w]===1&&lab[p+w]===-1){lab[p+w]=id;stack[sp++]=p+w;}
+    }
+    if(area>=minA) out.push({area,pts,bbox:[bx0,by0,bx1,by1]});
+    id++;
+  }
+  out.sort((a,b)=>b.area-a.area);
+  return out;
+}
+function convexHull(pts){
+  if(pts.length<3) return pts;
+  const p=pts.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+  const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);
+  const lo=[];
+  for(const q of p){ while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],q)<=0) lo.pop(); lo.push(q); }
+  const up=[];
+  for(let i=p.length-1;i>=0;i--){ const q=p[i];
+    while(up.length>=2&&cr(up[up.length-2],up[up.length-1],q)<=0) up.pop(); up.push(q); }
+  lo.pop(); up.pop();
+  return lo.concat(up);
+}
+function minAreaRect(hull){
+  let best=null, ba=Infinity;
+  for(let i=0;i<hull.length;i++){
+    const a=hull[i], b=hull[(i+1)%hull.length];
+    let ex=b[0]-a[0], ey=b[1]-a[1];
+    const L=Math.hypot(ex,ey); if(L<2) continue;
+    ex/=L; ey/=L;
+    const pxv=-ey, pyv=ex;
+    let mnU=Infinity,mxU=-Infinity,mnV=Infinity,mxV=-Infinity;
+    for(const p of hull){
+      const u=p[0]*ex+p[1]*ey, v=p[0]*pxv+p[1]*pyv;
+      if(u<mnU)mnU=u; if(u>mxU)mxU=u;
+      if(v<mnV)mnV=v; if(v>mxV)mxV=v;
+    }
+    const ar=(mxU-mnU)*(mxV-mnV);
+    if(ar<ba){ ba=ar;
+      best=[[mnU,mnV],[mxU,mnV],[mxU,mxV],[mnU,mxV]]
+        .map(([u,v])=>[u*ex+v*pxv, u*ey+v*pyv]);
+    }
+  }
+  return best;
+}
+function inPoly(x,y,p){
+  let c=false;
+  for(let i=0,j=3;i<4;j=i++){
+    const [xi,yi]=p[i],[xj,yj]=p[j];
+    if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)) c=!c;
+  }
+  return c;
+}
+
+/* ================= 单应 + 矫正 ================= */
+function solveH(from,to){
+  const A=[],b=[];
+  for(let i=0;i<4;i++){
+    const [x,y]=from[i],[u,v]=to[i];
+    A.push([x,y,1,0,0,0,-u*x,-u*y]);b.push(u);
+    A.push([0,0,0,x,y,1,-v*x,-v*y]);b.push(v);
+  }
+  const n=8;
+  for(let c=0;c<n;c++){
+    let p=c;for(let r=c+1;r<n;r++)if(Math.abs(A[r][c])>Math.abs(A[p][c]))p=r;
+    [A[c],A[p]]=[A[p],A[c]];[b[c],b[p]]=[b[p],b[c]];
+    const d=A[c][c];if(Math.abs(d)<1e-12)return null;
+    for(let j=c;j<n;j++)A[c][j]/=d;b[c]/=d;
+    for(let r=0;r<n;r++){if(r===c)continue;const f=A[r][c];if(!f)continue;
+      for(let j=c;j<n;j++)A[r][j]-=f*A[c][j];b[r]-=f*b[c];}
+  }
+  return [b[0],b[1],b[2],b[3],b[4],b[5],b[6],b[7],1];
+}
+function warpCanvas(rec,quad,isVert){
+  const W=isVert?638:1011, H=isVert?1011:638;
+  const cv2=document.createElement("canvas");cv2.width=W;cv2.height=H;
+  const ctx=cv2.getContext("2d");
+  const srcCanvas=rec.canvas, sw=srcCanvas.width, sh=srcCanvas.height;
+  // 一图多卡时多条 rec 共享同一张源画布：像素缓存挂在 canvas 上，别每条都存一份（1800px 图约 17MB/条）
+  if(!rec._sd) rec._sd=srcCanvas.__sd||(srcCanvas.__sd=srcCanvas.getContext("2d",{willReadFrequently:true})
+      .getImageData(0,0,sw,sh).data);
+  const sd=rec._sd;
+  const out=ctx.createImageData(W,H),od=out.data;
+  const qpx=quad.map(p=>[Math.min(sw-1,Math.max(0,p[0]*sw)),
+                         Math.min(sh-1,Math.max(0,p[1]*sh))]);   // 归一化 -> 源画布像素（越界夹紧，避免黑边）
+  const H2=solveH([[0,0],[W-1,0],[W-1,H-1],[0,H-1]],qpx);
+  if(!H2) return cv2;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const dn=H2[6]*x+H2[7]*y+H2[8];
+    const sx=(H2[0]*x+H2[1]*y+H2[2])/dn, sy=(H2[3]*x+H2[4]*y+H2[5])/dn;
+    let r=0,g=0,bl=0;
+    if(sx>=0&&sy>=0&&sx<sw-1&&sy<sh-1){
+      const x0=sx|0,y0=sy|0,fx=sx-x0,fy=sy-y0;
+      const i00=(y0*sw+x0)*4,i10=i00+4,i01=i00+sw*4,i11=i01+4;
+      const w00=(1-fx)*(1-fy),w10=fx*(1-fy),w01=(1-fx)*fy,w11=fx*fy;
+      r=sd[i00]*w00+sd[i10]*w10+sd[i01]*w01+sd[i11]*w11;
+      g=sd[i00+1]*w00+sd[i10+1]*w10+sd[i01+1]*w01+sd[i11+1]*w11;
+      bl=sd[i00+2]*w00+sd[i10+2]*w10+sd[i01+2]*w01+sd[i11+2]*w11;
+    }
+    const o=(y*W+x)*4;od[o]=r;od[o+1]=g;od[o+2]=bl;od[o+3]=255;
+  }
+  ctx.putImageData(out,0,0);
+  roundMask(ctx,W,H,R_CARD);
+  return cv2;
+}
+// 身份证是圆角矩形：1011×638 画布上 R≈35px（≈3mm，与实体卡一致）。
+// 长边恒为 1011（竖版是 638×1011），所以半径用常量即可。
+const R_CARD=35;
+function roundMask(ctx,W,H,r){
+  r=Math.max(0,Math.min(r,Math.min(W,H)/2));
+  ctx.globalCompositeOperation="destination-in";
+  ctx.beginPath();
+  ctx.moveTo(r,0);
+  ctx.lineTo(W-r,0);   ctx.arcTo(W,0,W,r,r);
+  ctx.lineTo(W,H-r);   ctx.arcTo(W,H,W-r,H,r);
+  ctx.lineTo(r,H);     ctx.arcTo(0,H,0,H-r,r);
+  ctx.lineTo(0,r);     ctx.arcTo(0,0,r,0,r);
+  ctx.closePath();
+  ctx.fillStyle="#000";ctx.fill();
+  ctx.globalCompositeOperation="source-over";
+}
+
+
+/* ===== 竖拍卡转正：首尾行段落数是唯一验证过的方向判据 ===== */
+function rot90(src,cw){
+  const o=document.createElement("canvas");
+  o.width=src.height; o.height=src.width;
+  const c=o.getContext("2d");
+  c.translate(o.width/2,o.height/2);
+  c.rotate(cw?Math.PI/2:-Math.PI/2);
+  c.drawImage(src,-src.width/2,-src.height/2);
+  return o;
+}
+// 连转 n 个 90°（n 可为负；n 为奇数时画布宽高互换）
+function rotN(src,n){
+  n=((n%4)+4)%4;
+  let o=src;
+  for(let i=0;i<n;i++) o=rot90(o,true);
+  return o;
+}
+// 在一个纵向区域内扫描，找"暗段数最多"的那一行。
+// 人像面底部是「公民身份号码 + 18位数字」，横向切出来 20+ 个小段；
+// 顶部只有「姓名 X X X」四五段。这个差异在 96 张实测里零重叠。
+function scanSegs(cv,y0,y1){
+  const H=cv.height, W=cv.width;
+  const ctx=cv.getContext("2d",{willReadFrequently:true});
+  const ya=Math.max(1,Math.round(H*y0)), yb=Math.min(H-2,Math.round(H*y1));
+  if(yb<=ya) return 0;
+  const rows=yb-ya+2;
+  const d=ctx.getImageData(0,ya-1,W,rows).data;
+  const g=new Float64Array(rows*W);
+  for(let i=0,p=0;i<rows*W;i++,p+=4)
+    g[i]=0.299*d[p]+0.587*d[p+1]+0.114*d[p+2];
+  let best=0;
+  for(let y=1;y<rows-1;y++){
+    const o=y*W, o0=(y-1)*W, o1=(y+1)*W;
+    let mean=0; for(let x=0;x<W;x++) mean+=g[o+x]; mean/=W;
+    const thr=mean*0.86;
+    let cnt=0,run=0;
+    for(let x=0;x<W;x++){
+      const v=(g[o0+x]+g[o+x]+g[o1+x])/3;
+      if(v<thr) run++;
+      else { if(run>=2) cnt++; run=0; }
+    }
+    if(run>=2) cnt++;
+    if(cnt>best) best=cnt;
+  }
+  return best;
+}
+// 竖版 638x1011 -> 两个方向各转 90°，谁"底部段落多"谁就是正立
+function uprightVertical(cv,force){
+  const a=rot90(cv,true), b=rot90(cv,false);
+  if(force===1) return {cv:a,rot:1,auto:false};
+  if(force===-1) return {cv:b,rot:-1,auto:false};
+  // 正立时：底部是 18 位号码（切出十几段），顶部只是"姓名"行（几段）。
+  // 只看底部会被"住址多行文字"骗到，改用 底部段数 - 顶部段数 的差。
+  const botA=scanSegs(a,0.78,0.99), botB=scanSegs(b,0.78,0.99);
+  const topA=scanSegs(a,0.10,0.34), topB=scanSegs(b,0.10,0.34);
+  const sa=botA-0.7*topA, sb=botB-0.7*topB;
+  const pickA=sa>=sb, hi=Math.max(botA,botB), lo=Math.min(botA,botB);
+  return {cv:pickA?a:b, rot:pickA?1:-1, auto:true,
+          unsure:(hi<10 || hi<lo*1.6 || Math.abs(sa-sb)<2)};
+}
+
+/* ================= 多卡检测 =================
+   一张照片里可能同时躺着两张卡（身份证 + 银行卡，尺寸几乎一样）。
+   DocCornerNet 是单文档模型，两张同尺寸矩形同框时会输出"跨两张的并集"，
+   而且置信度照样 1.000 —— 分数识别不出这个错误，只能靠"框形像不像卡"来筛。
+   流程：整图推一次 → ar 不像卡就按 55%/62% 高的整宽窗口上下滑一遍 →
+        只留 ar<0.06 的 → 按中心距去重 → 每个候选扩边 7% 再推一次精修。
+   实测 20 张（10 组双面 + 每张都压着一张银行卡）：20/20 框在身份证上，误框银行卡 0 次。 */
+const AR_TOL=0.06;
+function cropCanvas(src,x0,y0,w,h){
+  const c=document.createElement("canvas"); c.width=w; c.height=h;
+  c.getContext("2d").drawImage(src,x0,y0,w,h,0,0,w,h);
+  return c;
+}
+async function mlOnCrop(src,x0,y0,w,h){
+  const r=await detectML(cropCanvas(src,x0,y0,w,h));
+  if(!r) return null;
+  const W=src.width,H=src.height;
+  const qpx=r.quad.map(p=>[p[0]*w+x0,p[1]*h+y0]);
+  const g=geom(qpx,W,H);
+  return {quad:qpx.map(p=>[clamp01(p[0]/W),clamp01(p[1]/H)]),
+          metrics:{area:g.area,ar:g.ar,es:0,smean:0,sstd:0,gmean:0,score:r.metrics.score||0},
+          is_vertical:g.vert,engine:"ml"};
+}
+const cenOf=q=>[(q[0][0]+q[1][0]+q[2][0]+q[3][0])/4,(q[0][1]+q[1][1]+q[2][1]+q[3][1])/4];
+async function refineMLQuad(src,quad,score,iters){
+  const W=src.width,H=src.height;
+  let best=quad, bg=geom(quad.map(p=>[p[0]*W,p[1]*H]),W,H), bscore=score||0;
+  for(let k=0;k<(iters||2);k++){
+    const xs=best.map(p=>p[0]*W), ys=best.map(p=>p[1]*H);
+    const x0=Math.max(0,Math.round(Math.min(...xs)-0.07*W)), x1=Math.min(W,Math.round(Math.max(...xs)+0.07*W));
+    const y0=Math.max(0,Math.round(Math.min(...ys)-0.07*H)), y1=Math.min(H,Math.round(Math.max(...ys)+0.07*H));
+    if(x1-x0<48||y1-y0<48) break;
+    const r=await mlOnCrop(src,x0,y0,x1-x0,y1-y0);
+    if(!r) break;
+    if(r.metrics.ar<bg.ar-1e-4 && r.metrics.score>0.3){
+      best=r.quad; bg=geom(best.map(p=>[p[0]*W,p[1]*H]),W,H); bscore=r.metrics.score;
+    }
+    else break;
+  }
+  return {quad:best,is_vertical:bg.vert,
+          metrics:{area:bg.area,ar:bg.ar,es:0,smean:0,sstd:0,gmean:0,score:bscore}};
+}
+/* 说明：这里不做"是不是身份证"的分类。
+   试过留白占比（身份证 0.23~0.90、工行/中行普通卡 0.00~0.35），但工银社保联名卡是白底，
+   留白 0.67~0.71，和身份证完全重叠；四象限墨迹差也不行（银行卡最大 0.058、国徽面最小 0.047）。
+   要真剔除只能上 OCR。当前策略：同框的卡都拆出来，靠「同图 N 卡 · 第 i」标出来，人来判。 */
+async function detectMLCards(canvas){
+  const W=canvas.width,H=canvas.height;
+  const wc=wholeCard(canvas);
+  if(wc){
+    const q=[[0,0],[1,0],[1,1],[0,1]];
+    const g=geom(q.map(p=>[p[0]*W,p[1]*H]),W,H);
+    return [{quad:q,metrics:{area:g.area,ar:g.ar,es:0,smean:0,sstd:0,gmean:0,score:1},
+             is_vertical:false,engine:"whole",whole:{iar:wc.iar,dist:wc.dist},tag:"whole"}];
+  }
+  const cands=[];
+  const full=await detectML(canvas);
+  if(full){ full.tag="full"; cands.push(full); }
+  if(!full || full.metrics.ar>=AR_TOL){
+    for(const kh of [0.55,0.62]){
+      const tops=[0,0.5-kh/2,1-kh];
+      for(const t of tops){
+        const y0=Math.round(t*H), y1=Math.round(y0+kh*H);
+        if(y1-y0<H*0.2) continue;
+        const r=await mlOnCrop(canvas,0,y0,W,y1-y0);
+        if(r){ r.tag="win"+Math.round(kh*100)+"@"+Math.round(t*100); cands.push(r); }
+      }
+    }
+  }
+  const good=cands.filter(c=>c.metrics.ar<AR_TOL && (c.metrics.score||0)>0.4);
+  good.sort((a,b)=>(b.metrics.score||0)-(a.metrics.score||0));
+  const keep=[];
+  for(const c of good){
+    const cc=cenOf(c.quad);
+    const dup=keep.some(k=>{const kc=cenOf(k.quad);
+      return Math.hypot(cc[0]-kc[0],cc[1]-kc[1])<0.10
+          && Math.abs(Math.log((k.metrics.area||1e-6)/(c.metrics.area||1e-6)))<0.5;});
+    if(!dup) keep.push(c);
+  }
+  const out=[];
+  for(const c of keep.slice(0,3)){
+    const rr=await refineMLQuad(canvas,c.quad,c.metrics.score,2);
+    out.push({...c,...rr,engine:"ml",tag:c.tag+"+rf"});
+  }
+  return out;
+}
+/* 面别（启发式）：人像面右下是深色证件照，国徽面左上是大国徽 + 标题。
+   用四象限墨迹密度比，实测本批 20 张 20/20；只做预填，用户点按钮可以覆盖。 */
+function sideOf(cv){
+  const W=cv.width,H=cv.height;
+  if(!W||!H) return "";
+  const d=cv.getContext("2d",{willReadFrequently:true}).getImageData(0,0,W,H).data;
+  const N=W*H, gray=new Uint8Array(N), hist=new Uint32Array(256);
+  for(let i=0,p=0;i<N;i++,p+=4){ const v=(0.299*d[p]+0.587*d[p+1]+0.114*d[p+2])|0; gray[i]=v; hist[v]++; }
+  let acc=0,thr=60;
+  for(let v=0;v<256;v++){ acc+=hist[v]; if(acc>=N*0.12){ thr=v; break; } }
+  const x0=Math.round(W*0.05),x1=Math.round(W*0.95),y0=Math.round(H*0.08),y1=Math.round(H*0.92);
+  const xm=Math.round((x0+x1)/2), ym=Math.round((y0+y1)/2);
+  let tl=0,br=0,ntl=0,nbr=0;
+  for(let y=y0;y<y1;y++){
+    const row=y*W;
+    for(let x=x0;x<xm;x++){ if(y<ym){ tl+=gray[row+x]<thr?1:0; ntl++; } }
+    for(let x=xm;x<x1;x++){ if(y>=ym){ br+=gray[row+x]<thr?1:0; nbr++; } }
+  }
+  if(!ntl||!nbr) return "";
+  const a=tl/ntl, b=br/nbr;
+  // 阈值 0.06 不是随手取的：本批 20 张里，身份证 8 张人像面差 0.117~0.171、9 张国徽面 0.101~0.148；
+  // 而同框的银行卡（含工银社保联名卡）差值都在 0.001~0.058 —— 取 0.06 谁都不误标，
+  // 代价是差值 0.047 的那张国徽面留成"待定"（宁可留白，也别给银行卡贴错面别）。
+  if(Math.abs(a-b)<0.06) return "";
+  return a>b?"国徽面":"人像面";
+}
+
+/* 说明：这里不做"是不是身份证"的分类。
+   试过留白占比（身份证 0.23~0.90、工行/中行普通卡 0.00~0.35），但工银社保联名卡是白底，
+   留白 0.67~0.71，和身份证完全重叠；四象限墨迹差也不行（银行卡最大 0.058、国徽面最小 0.047）。
+   要真剔除只能上 OCR。当前策略：同框的卡都拆出来，靠「同图 N 卡 · 第 i」标出来，人来判。 */
+
+/* ================= 渲染 ================= */
+const recs=[];
+window.__recs=recs;
+const pad2=n=>String(n).padStart(2,"0");
+const baseName=n=>String(n||"img").replace(/\.[^.]+$/,"");
+// 微信图名长得几乎一样（微信图片_2025…_64），光看全名反而分不清。
+// 这里按"同族"（前缀非数字部分相同，如 微信图片_ / ScreenShot_）分组，
+// 剪掉组内最长公共前缀，只留真正有辨识度那一段。
+function shortTag(name){
+  const b=baseName(name);
+  const k=s=>(s.match(/^[^\d]*/)||[""])[0];
+  const grp=recs.map(r=>baseName(r.name)).filter(s=>k(s)===k(b));
+  if(grp.length<2) return b;
+  let cp=0;
+  while(cp<grp[0].length){
+    const ch=grp[0][cp];
+    if(!grp.every(s=>s[cp]===ch)) break;
+    cp++;
+  }
+  if(cp<4) return b;
+  const t=b.slice(cp);
+  return t||b;
+}
+// 双重命名：序号 + 原文件名，两边都写在文件名里，肉眼能对回列表
+// 一图多卡时再加 _c1/_c2，否则两条记录会撞名
+function outName(rec,st){
+  const s=String(rec.no).padStart(2,"0")+"_"+baseName(rec.name)
+    +(rec.cardCount>1?`_c${(rec.cardIdx|0)+1}`:"");
+  const tag=(st&&(st.rotQ||st.swap))?`_${(((st.rotQ|0)%4)+4)%4*90}${st.swap?"_swap":""}`:"";
+  return s+tag+".png";
+}
+function dlCanvas(cv,name){
+  cv.toBlob(b=>{
+    if(!b) return;
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(b); a.download=name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),6000);
+  },"image/png");
+}
+function drawOrig(cvEl,rec,dragIdx,selIdx){
+  const src=rec.canvas, maxH=420, maxW=560;
+  const sc=Math.min(maxW/src.width, maxH/src.height, 1);
+  const w=Math.round(src.width*sc), h=Math.round(src.height*sc);
+  cvEl.width=w;cvEl.height=h;
+  const ctx=cvEl.getContext("2d");
+  ctx.drawImage(src,0,0,w,h);
+  // rec.quad 永远保留"自动结果"，显示/拖拽用 rec.cur，避免把金标准污染成 auto_quad
+  const qq=rec.cur||rec.quad;
+  if(!qq) return;
+  const pts=qq.map(p=>[p[0]*w,p[1]*h]);
+  ctx.lineWidth=2;ctx.strokeStyle="#4a9eff";ctx.beginPath();
+  pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+  ctx.closePath();ctx.stroke();
+  ctx.fillStyle="#4a9eff22";ctx.fill();
+  pts.forEach((p,i)=>{
+    const out = p[0]<0||p[0]>w||p[1]<0||p[1]>h;
+    // 跑出画面的角：钉在边缘显示，颜色转红，并画一条虚线指向真实位置
+    const cx=Math.max(10,Math.min(w-10,p[0])), cy=Math.max(10,Math.min(h-10,p[1]));
+    const hl = (dragIdx===i||selIdx===i);
+    if(out){
+      ctx.save();
+      ctx.strokeStyle="#ff6b5e";ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(p[0],p[1]);ctx.stroke();
+      ctx.restore();
+    }
+    const rad = out ? 10 : (hl?9:6);
+    ctx.beginPath();ctx.arc(cx,cy,rad,0,7);
+    ctx.fillStyle = out?"#ff5a4c":(hl?"#ffd24a":"#4a9eff");ctx.fill();
+    ctx.strokeStyle = hl?"#fff":(out?"#fff":"#000");ctx.lineWidth = (hl||out)?2:1.5;ctx.stroke();
+    if(hl||out){
+      ctx.fillStyle = out?"#fff":"#111";
+      ctx.font="bold 11px ui-monospace,monospace";
+      ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillText(String(i+1),cx,cy+0.5);
+    }
+  });
+}
+
+function buildItem(rec){
+  const st=state.items[rec.id] || (state.items[rec.id]={verdict:"",tags:[],note:"",side:"",quad:null,manual:false});
+  if(!st.steps) st.steps=[];
+  if(!st.side && rec.autoSide) st.side=rec.autoSide;   // 面别预填，点过按钮就不再覆盖
+  const el=document.createElement("div");
+  el.className="item";
+  el.dataset.id=rec.id;
+  const m=rec.metrics||{};
+  // ML 引擎不产出 es（边缘支撑度），原来那套判据会把每张 ML 结果都判成"可疑"，纯属误伤
+  // ML 的卡形门控就是 ar<0.06，自动判据跟着收紧到 0.07，别再用经典引擎的 0.13
+  const isML = rec.engine==="ml"||rec.engine==="whole";
+  const auto = rec.fail?"fail":( isML
+    ? ( ((m.score===undefined?1:m.score)>=0.5 && m.area>=0.05 && m.area<=1.001 && m.ar<=0.07)?"ok":"warn")
+    : ( (m.es>=0.60&&m.area>=0.07&&m.area<=0.88&&m.ar<=0.13)?"ok":"warn") );
+  rec.auto=auto;
+  el.innerHTML=`
+   <div class="it-head">
+     <span class="idx">${pad2(rec.no)}</span>
+     <span class="badge ${rec.engine==="whole"?"b-whole":rec.engine==="ml"?"b-ok":rec.engine==="classic-fallback"?"b-warn":"b-unk"}" data-role="eng" title="本张实际使用的检测引擎">${
+        rec.engine==="whole"?"整图即卡":rec.engine==="ml"?"ML 1.9MB":rec.engine==="classic-fallback"?"ML→经典":"经典"}</span>
+     <span class="fname" title="${rec.name}">${rec.name}</span>
+     <span class="fbase" title="辨识段（各文件名公共前缀已省略）· 完整名：${rec.name}">${shortTag(rec.name)}</span>
+     <span class="badge ${auto==="ok"?"b-ok":auto==="fail"?"b-bad":"b-warn"}">${
+        auto==="ok"?"自动·可用":auto==="fail"?"自动·失败":"自动·可疑"}</span>
+     <span class="badge b-unk" data-role="gold">未存基准</span>
+     <span class="badge b-unk" data-role="vb">未审</span>
+     <div class="metrics">${
+       rec.engine==="whole"
+        ? `<span class="chip hi">整图 ${(m.area*100).toFixed(0)}%</span>
+           <span class="chip">比例偏差 ${(m.ar||0).toFixed(3)}</span>
+           <span class="chip">未跑检测</span>`
+        : rec.engine==="ml"
+        ? `<span class="chip hi">置信 ${(m.score||0).toFixed(3)}</span>
+           <span class="chip">面积 ${((m.area||0)*100).toFixed(0)}%</span>
+           <span class="chip">比例偏差 ${(m.ar||0).toFixed(3)}</span>`
+        : `<span class="chip">面积 ${((m.area||0)*100).toFixed(0)}%</span>
+           <span class="chip">比例偏差 ${(m.ar||0).toFixed(3)}</span>
+           <span class="chip ${m.es>0.6?"hi":""}">边缘 ${(m.es||0).toFixed(2)}</span>
+           <span class="chip">饱和 ${(m.smean||0).toFixed(2)}</span>`}
+       ${rec.cardCount>1?`<span class="chip hi">同图 ${rec.cardCount} 卡 · 第 ${rec.cardIdx+1}</span>`:""}
+     </div>
+   </div>
+   <div class="body">
+     <div class="pane orig">
+       <span class="cap">原图 · 拖四角，或用下方箭头微调</span>
+       <canvas></canvas>
+       <div class="nudge">
+         <span class="csg">
+           <button class="cs on" data-c="0" title="选中 左上角">①</button><button class="cs" data-c="1" title="选中 右上角">②</button><button class="cs" data-c="2" title="选中 右下角">③</button><button class="cs" data-c="3" title="选中 左下角">④</button>
+         </span>
+         <span class="pad">
+           <button data-nudge="u" title="上移">↑</button>
+           <button data-nudge="l" title="左移">←</button>
+           <button data-nudge="d" title="下移">↓</button>
+           <button data-nudge="r" title="右移">→</button>
+         </span>
+         <span class="stp">
+           <button data-step="1" class="on">1px</button><button data-step="5">5px</button><button data-step="20">20px</button>
+         </span>
+         <button data-act="pullin" title="把跑到画面外的角一次性收回画面内">收回</button>
+       </div>
+     </div>
+     <div class="pane out"><span class="cap">矫正输出 <span data-role="dim"></span></span><canvas></canvas></div>
+   </div>
+   <div class="foot">
+     <div class="side">
+       <button data-s="人像面">人像面</button><button data-s="国徽面">国徽面</button>
+     </div>
+     <button data-v="ok">✓ 可用</button><button data-v="bad">✗ 有问题</button>
+     <div class="tags">${TAGS.map(t=>`<span class="tag" data-t="${t}">${t}</span>`).join("")}</div>
+     <input class="note" placeholder="备注">
+     <span class="rotgrp" title="任何一张卡都能手动转；转的只是方向，不改变框">
+       <button data-act="rotccw" title="逆时针 90°">↺ 90°</button>
+       <button data-act="rotcw" title="顺时针 90°">↻ 90°</button>
+       <button data-act="rot180" title="转 180°（自动转正方向选反时用这个）">180°</button>
+       <button data-act="resetrot" title="方向复位（0°）">复位</button>
+       <button data-act="swap" title="切换竖版/横版基准：框对了但画面被压扁、拉宽时点这个">竖⇄横</button>
+     </span>
+     <button data-act="gold" title="把当前框 + 方向存为人工基准（金标准，导出报告时带上）">存基准</button>
+     <button data-act="dl" title="下载这张矫正图，文件名 = 序号_原文件名.png">下载图</button>
+     <button data-act="rerun">重跑</button>
+   </div>
+   <div class="steps" data-role="steps"></div>`;
+  listEl.appendChild(el);
+
+  const cvO=el.querySelector(".orig canvas"), cvU=el.querySelector(".out canvas");
+  const bSwap=el.querySelector('[data-act="swap"]'), bReset=el.querySelector('[data-act="resetrot"]');
+  let sel=0, stepPx=1, rt=null;
+  const chips=[...el.querySelectorAll(".cs")];
+  function paint(hi){ rec.cur=q(); drawOrig(cvO,rec,hi==null?-1:hi,sel); }
+  function setSel(i){ sel=i; chips.forEach((c,k)=>c.classList.toggle("on",k===i)); paint(-1); }
+  function q(){ return st.quad||rec.quad; }
+  // 记录矫正步骤：AI 靠这串动作判断"哪类操作被反复用来救同一类图"
+  function log(s){
+    if(!st.steps) st.steps=[];
+    if(st.steps.length<60) st.steps.push(s);
+    if(st.gold && !s.startsWith("★")) st.goldDirty=true;   // 存过基准又改框 → 提示重存
+    const se=el.querySelector('[data-role="steps"]');
+    if(se) se.textContent=st.steps.join(" → ");
+    save();
+  }
+  // 竖版基准 = 自动判断 XOR 手动切换
+  function effVert(){ return !!rec.is_vertical !== !!st.swap; }
+  function rotQ(){ return (((st.rotQ|0)%4)+4)%4; }
+  // 箭头微调：一次一步；拖动输出重算做 90ms 防抖，避免连点卡顿
+  function softRefresh(){ clearTimeout(rt); rt=setTimeout(()=>{refresh(true);save();},90); }
+  function nudge(dx,dy){
+    const qq=q(); if(!qq){ toast("这张还没框，先点「重跑」或拖角"); return; }
+    const arr=qq.map(p=>[...p]);
+    const wpx=rec.canvas.width, hpx=rec.canvas.height;
+    const x=Math.max(-0.08,Math.min(1.08,arr[sel][0]+dx*stepPx/wpx));
+    const y=Math.max(-0.08,Math.min(1.08,arr[sel][1]+dy*stepPx/hpx));
+    arr[sel]=[x,y];
+    st.quad=arr; st.manual=true; rec.cur=arr;
+    log(`nudge${sel+1}(${dx*stepPx},${dy*stepPx})`);
+    paint(-1); softRefresh();
+  }
+  function refresh(recalc){
+    paint(-1);
+    // 基准徽标
+    const gb=el.querySelector('[data-role="gold"]');
+    if(gb){
+      const stale=!!(st.gold&&st.goldDirty);
+      gb.className="badge "+(st.gold&&!stale?"b-gold":stale?"b-warn":"b-unk");
+      gb.textContent=st.gold?(stale?"基准已改·待重存":"基准已存"):"未存基准";
+    }
+    if(!q()){ el.querySelector('[data-role="dim"]').textContent="未检出"; return; }
+    const vert=effVert(), rq=rotQ();
+    let out=warpCanvas(rec,q(),vert), note="";
+    if(vert){
+      const uu=uprightVertical(out,0);
+      out=uu.cv;
+      note = uu.unsure?" · 方向待确认":" · 已转正";
+    }
+    if(rq) out=rotN(out,rq);          // 手动旋转叠加在自动结果之上
+    cvU.width=out.width;cvU.height=out.height;
+    cvU.getContext("2d").drawImage(out,0,0);
+    el.querySelector('[data-role="dim"]').textContent=
+      (st.manual?"手动":"自动")+` · ${out.width}×${out.height}`
+      +(vert?" · 竖版":"")+note+(rq?` · 转${rq*90}°`:"")
+      +` · ${st.side||"面别待定"}`;
+    bSwap.classList.toggle("on",!!st.swap);
+    bReset.classList.toggle("on",rq>0);
+  }
+  // 拖角
+  let drag=-1;
+  const norm=ev=>{const r=cvO.getBoundingClientRect();
+    return [(ev.clientX-r.left)/r.width,(ev.clientY-r.top)/r.height];};
+  cvO.addEventListener("pointerdown",e=>{
+    const qq=q(); if(!qq) return;
+    const [nx,ny]=norm(e); let bi=-1,bd=1e9;
+    qq.forEach((p,i)=>{const d=(p[0]-nx)**2+(p[1]-ny)**2;if(d<bd){bd=d;bi=i}});
+    if(bi>=0) setSel(bi);                       // 点一下就选中，方便接着用箭头调
+    if(bd<0.004){drag=bi;cvO.setPointerCapture(e.pointerId);}
+  });
+  cvO.addEventListener("pointermove",e=>{
+    if(drag<0)return;
+    const [nx,ny]=norm(e);
+    const qq=q().map(p=>[...p]);
+    qq[drag]=[Math.max(0,Math.min(1,nx)),Math.max(0,Math.min(1,ny))];
+    st.quad=qq; st.manual=true; rec.cur=qq;
+    paint(drag);
+  });
+  cvO.addEventListener("pointerup",()=>{
+    if(drag>=0){
+      const p=q()[drag];
+      log(`drag${drag+1}→(${p[0].toFixed(3)},${p[1].toFixed(3)})`);
+      drag=-1; refresh(true); save();
+    }
+  });
+
+  // ---- 四角微调条 ----
+  chips.forEach(c=>c.onclick=()=>setSel(+c.dataset.c));
+  el.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{
+    stepPx=+b.dataset.step;
+    el.querySelectorAll('[data-step]').forEach(x=>x.classList.toggle("on",x===b));
+  });
+  el.querySelectorAll('[data-nudge]').forEach(b=>{
+    const D={u:[0,-1],d:[0,1],l:[-1,0],r:[1,0]}[b.dataset.nudge];
+    b.onclick=()=>nudge(D[0],D[1]);
+  });
+  el.querySelector('[data-act="pullin"]').onclick=()=>{
+    const qq=q(); if(!qq) return toast("这张还没框");
+    const arr=qq.map(p=>[Math.max(0.002,Math.min(0.998,p[0])),
+                         Math.max(0.002,Math.min(0.998,p[1]))]);
+    st.quad=arr; st.manual=true; rec.cur=arr;
+    log("pullin");
+    paint(-1); refresh(true); save();
+    toast("已把超界的角收回画面内");
+  };
+  // 键盘方向键也能微调（选中角任何按钮后直接按方向键）
+  el.addEventListener("keydown",e=>{
+    const M={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]}[e.key];
+    if(!M) return;
+    e.preventDefault(); nudge(M[0],M[1]);
+  });
+
+  el.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{
+    const v=b.dataset.v; st.verdict=st.verdict===v?"":v;
+    // 打了"可用"就等于认可当前这个框 —— 自动存一份基准，
+    // 否则导出报告里 diag 全是空的（上一轮 20 张就吃了这个亏）。
+    if(st.verdict==="ok" && q() && !(st.gold&&!st.goldDirty)){
+      st.gold={quad:q().map(p=>[...p]),vert:effVert(),rotQ:rotQ(),swap:!!st.swap,
+               auto_quad:(rec.auto0||rec.quad0||null),ts:new Date().toISOString()};
+      st.goldDirty=false;
+      log("★自动存基准");
+    }
+    sync(el,st);
+  });
+  el.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{
+    const s=b.dataset.s; st.side=st.side===s?"":s; sync(el,st);
+  });
+  el.querySelectorAll(".tag").forEach(t=>t.onclick=()=>{
+    const g=t.dataset.t, i=st.tags.indexOf(g);
+    i>=0?st.tags.splice(i,1):st.tags.push(g);
+    t.classList.toggle("sel");
+    if(st.tags.length&&!st.verdict){st.verdict="bad";sync(el,st);}else save();
+  });
+  el.querySelector(".note").oninput=e=>{st.note=e.target.value;save();};
+  const setRot=d=>{ st.rotQ=((((st.rotQ|0)+d)%4)+4)%4;
+    log(`rot${d>0?"+":""}${d*90}`); refresh(false); save(); };
+  el.querySelector('[data-act="rotcw"]').onclick=()=>setRot(1);
+  el.querySelector('[data-act="rotccw"]').onclick=()=>setRot(-1);
+  el.querySelector('[data-act="rot180"]').onclick=()=>setRot(2);
+  el.querySelector('[data-act="resetrot"]').onclick=()=>{ st.rotQ=0; log("rot重置"); refresh(false); save(); };
+  el.querySelector('[data-act="swap"]').onclick=()=>{ st.swap=!st.swap; log(st.swap?"swap→竖":"swap→横"); refresh(false); save(); };
+  el.querySelector('[data-act="gold"]').onclick=()=>{
+    const qq=q(); if(!qq) return toast("这张还没框");
+    st.gold={quad:qq.map(p=>[...p]),vert:effVert(),rotQ:rotQ(),swap:!!st.swap,
+             auto_quad:(rec.auto0||rec.quad||null),ts:new Date().toISOString()};
+    st.goldDirty=false;
+    log("★存基准");
+    refresh(false); save(); stat();
+    toast("已存为人工基准框 —— 这张可以过了");
+  };
+  el.querySelector('[data-act="dl"]').onclick=()=>{
+    const cv=el.querySelector(".out canvas");
+    if(!cv.width) return toast("还没生成矫正图");
+    dlCanvas(cv,outName(rec,st));
+    toast("已下载 "+outName(rec,st));
+  };
+  el.querySelector('[data-act="rerun"]').onclick=async()=>{
+    toast("重跑中…"); await new Promise(r=>setTimeout(r,30));
+    let r2=null;
+    if(ENGINE==="ml"){
+      // 同一个文件可能拆出多张卡：按卡序号取，取不到就退回第一张
+      let list=[];
+      try{ list=await detectMLCards(rec.canvas); }catch(e){ console.warn(e); }
+      r2=list[rec.cardIdx]||list[0]||null;
+    }else{
+      r2=detect(rec.canvas);
+      if(r2&&r2.quad){ r2.quad=refineQuad(rec.canvas,r2.quad);
+        r2.is_vertical=vertOf(r2.quad,rec.canvas.width,rec.canvas.height); }
+    }
+    rec.metrics=r2?r2.metrics:null; rec.quad=r2?r2.quad:null;
+    rec.auto0=r2?r2.quad:null; rec.cur=null;
+    rec.is_vertical=r2?!!r2.is_vertical:false; rec.fail=!r2;
+    st.quad=null; st.manual=false; st.gold=null; st.side=""; st.steps=["重跑"];
+    const m=rec.metrics||{};
+    el.querySelector(".metrics").innerHTML= rec.engine==="ml"
+      ? `<span class="chip hi">置信 ${(m.score||0).toFixed(3)}</span>
+         <span class="chip">面积 ${((m.area||0)*100).toFixed(0)}%</span>
+         <span class="chip">比例偏差 ${(m.ar||0).toFixed(3)}</span>
+         ${rec.cardCount>1?`<span class="chip hi">同图 ${rec.cardCount} 卡 · 第 ${rec.cardIdx+1}</span>`:""}`
+      : `<span class="chip">面积 ${((m.area||0)*100).toFixed(0)}%</span>
+         <span class="chip">比例偏差 ${(m.ar||0).toFixed(3)}</span>
+         <span class="chip ${m.es>0.6?"hi":""}">边缘 ${(m.es||0).toFixed(2)}</span>
+         <span class="chip">饱和 ${(m.smean||0).toFixed(2)}</span>`;
+    refresh(true); save(); toast("已重跑");
+  };
+  st.tags.forEach(t=>{const n=el.querySelector(`.tag[data-t="${t}"]`);if(n)n.classList.add("sel")});
+  el.querySelector(".note").value=st.note||"";
+  const se=el.querySelector('[data-role="steps"]');
+  if(se) se.textContent=(st.steps||[]).join(" → ");
+  sync(el,st); refresh(true);
+  rec._el=el;
+}
+function sync(el,st){
+  el.classList.toggle("v-ok",st.verdict==="ok");
+  el.classList.toggle("v-bad",st.verdict==="bad");
+  const vb=el.querySelector('[data-role="vb"]');
+  vb.className="badge "+(st.verdict==="ok"?"b-ok":st.verdict==="bad"?"b-bad":"b-unk");
+  vb.textContent=st.verdict==="ok"?"人工·可用":st.verdict==="bad"?"人工·错":"未审";
+  el.querySelectorAll("[data-v]").forEach(b=>{
+    b.classList.toggle("on-ok",b.dataset.v==="ok"&&st.verdict==="ok");
+    b.classList.toggle("on-bad",b.dataset.v==="bad"&&st.verdict==="bad");
+  });
+  el.querySelectorAll("[data-s]").forEach(b=>b.classList.toggle("on-sel",b.dataset.s===st.side));
+  save();stat();
+}
+function stat(){
+  let ok=0,bad=0,todo=0,gold=0;
+  recs.forEach(r=>{const s=state.items[r.id]||{};
+    if(s.gold)gold++;
+    if(!s.verdict)todo++;else if(s.verdict==="ok")ok++;else bad++;});
+  document.getElementById("stat").innerHTML=
+    `共 <b>${recs.length}</b> 张 · 基准 <b style="color:#7ce6a8">${gold}</b> · 可用 <b style="color:#4cd58a">${ok}</b> · 错 <b style="color:#f07a70">${bad}</b> · 未审 <b>${todo}</b>`;
+}
+
+/* ================= 导入 =================
+   一个文件可能出 1~N 条记录（同图多卡）。id 用「文件键#卡序号」，标签/判定仍按条存。 */
+async function addFiles(files){
+  const arr=[...files].filter(f=>f.type.startsWith("image/"));
+  if(!arr.length) return;
+  document.getElementById("drop").classList.add("hidden");
+  const MAXDIM=1800;
+  let nCard=0, nFile=0;
+  for(let i=0;i<arr.length;i++){
+    const f=arr[i];
+    const key="f_"+f.name+"_"+f.size;
+    if(recs.some(r=>(r.srcKey||r.id)===key)) continue;
+    const url=URL.createObjectURL(f);
+    const img=new Image();
+    await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url;});
+    const sc=Math.min(1, MAXDIM/Math.max(img.naturalWidth,img.naturalHeight));
+    const c=document.createElement("canvas");
+    c.width=Math.round(img.naturalWidth*sc);c.height=Math.round(img.naturalHeight*sc);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    URL.revokeObjectURL(url);
+    let found=[];
+    if(ENGINE==="ml"){
+      try{ found=await detectMLCards(c); }
+      catch(e){ console.warn("[ML] 多卡检测出错，回退经典",e); }
+      if(!found.length){
+        const r2=detect(c);
+        if(r2){ r2.quad=refineQuad(c,r2.quad); r2.is_vertical=vertOf(r2.quad,c.width,c.height); r2.engine="classic-fallback"; found=[r2]; }
+      }
+    }else{
+      const r=detect(c);
+      if(r){ r.quad=refineQuad(c,r.quad); r.is_vertical=vertOf(r.quad,c.width,c.height); found=[r]; }
+    }
+    if(!found.length) found=[null];
+    nFile++;
+    for(let k=0;k<found.length;k++){
+      const r=found[k];
+      const rec={id:key+"#"+k, srcKey:key, no:recs.length+1, cardIdx:k, cardCount:found.length,
+                 name:f.name, canvas:c,
+                 quad:r?r.quad:null, auto0:r?r.quad:null, cur:null,
+                 metrics:r?r.metrics:null, is_vertical:r?!!r.is_vertical:false,
+                 engine:r?(r.engine||ENGINE):ENGINE, wholeImage:!!(r&&r.engine==="whole"),
+                 fail:!r, detTag:r?(r.tag||""):"", autoSide:""};
+      if(rec.quad){
+        // 面别预填（判不准就留空 = 待定，不当场瞎猜）
+        try{ rec.autoSide=sideOf(warpCanvas(rec,rec.quad,rec.is_vertical)); }catch(e){ console.warn(e); }
+      }
+      recs.push(rec);
+      buildItem(rec);
+      nCard++;
+      await new Promise(res=>setTimeout(res,0));
+    }
+    stat();
+  }
+  // 新文件进来会改变公共前缀，统一刷一遍辨识段（只改文字，不重算图）
+  recs.forEach(r=>{
+    const fb=r._el&&r._el.querySelector(".fbase");
+    if(fb) fb.textContent=shortTag(r.name);
+  });
+  toast(nCard>nFile?`已导入 ${nFile} 张，拆出 ${nCard} 张卡（同框的银行卡也会拆出来）`:`已导入 ${nCard} 张`);
+}
+
+/* ================= 事件 ================= */
+const engBtn=document.getElementById("btnEngine");
+function paintEngine(){
+  engBtn.textContent="引擎："+(ENGINE==="ml"?"ML":"经典");
+  engBtn.classList.toggle("mlon", ENGINE==="ml");
+}
+paintEngine();
+/* 标签/备注/判定是按文件名存在浏览器本地的，换引擎后上一轮的结论已经不适用于新结果，
+   必须清掉 —— 否则报告里会继续挂着"没检出"，把判断带偏（真发生过）。基准(gold)保留。 */
+function clearMarks(){
+  let n=0;
+  for(const id in state.items){
+    const s=state.items[id]; if(!s) continue;
+    if((s.tags&&s.tags.length)||(s.note||"").trim()||s.verdict) n++;
+    s.tags=[]; s.note=""; s.verdict="";
+    const el=recs.find(r=>r.id===id); if(!el) continue;
+    const node=el._el; if(!node) continue;
+    node.querySelectorAll(".tag.sel").forEach(t=>t.classList.remove("sel"));
+    const nt=node.querySelector(".note"); if(nt) nt.value="";
+    sync(node,s);
+  }
+  save(); stat();
+  return n;
+}
+engBtn.onclick=async()=>{
+  ENGINE = ENGINE==="ml" ? "classic" : "ml";
+  localStorage.setItem("engine",ENGINE);
+  paintEngine();
+  const cleared=clearMarks();
+  if(cleared) toast(`已切换引擎：${cleared} 张上一轮的标签/备注已清空（基准保留），请重新审一遍`);
+  if(ENGINE==="ml"){
+    if(!_scanicP) toast("ML 模型加载中（约 3.5MB，仅首次）…");
+    try{ await loadScanic(); if(!cleared) toast("ML 就绪。点「全部重跑」用新引擎重算。"); }
+    catch(e){ toast("ML 加载失败："+(e&&e.message||e)); }
+  } else if(!cleared) toast("已切回经典引擎。点「全部重跑」重算。");
+};
+document.getElementById("btnPick").onclick=()=>fileEl.click();
+fileEl.onchange=e=>{addFiles(e.target.files);fileEl.value="";};
+const drop=document.getElementById("drop");
+drop.onclick=()=>fileEl.click();
+["dragenter","dragover"].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add("over")}));
+["dragleave","drop"].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove("over")}));
+drop.addEventListener("drop",e=>{addFiles(e.dataTransfer.files)});
+document.addEventListener("dragover",e=>e.preventDefault());
+document.addEventListener("drop",e=>{e.preventDefault();if(e.dataTransfer.files.length)addFiles(e.dataTransfer.files)});
+
+document.getElementById("tabs").onclick=e=>{
+  const t=e.target.closest(".tab");if(!t)return;
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");
+  const f=t.dataset.f;
+  document.querySelectorAll(".item").forEach(el=>{
+    const id=el.dataset.id, s=state.items[id]||{};
+    let show=true;
+    if(f==="bad") show=s.verdict==="bad";
+    if(f==="nodl") show=!s.gold;
+    el.classList.toggle("hidden",!show);
+  });
+};
+document.getElementById("btnRerunAll").onclick=async()=>{
+  if(!recs.length) return toast("先导入图片");
+  toast("批量重跑中…");
+  // 一图多卡时多个 rec 共享同一张源画布：按文件分组，每个文件只跑一次检测
+  const groups=new Map();
+  recs.forEach(r=>{ const k=r.srcKey||r.id; if(!groups.has(k)) groups.set(k,[]); groups.get(k).push(r); });
+  for(const [k,list] of groups){
+    const src=list[0].canvas;
+    let found=[];
+    if(ENGINE==="ml"){
+      try{ found=await detectMLCards(src); }catch(e){ console.warn(e); }
+      if(!found.length){
+        const r2=detect(src);
+        if(r2){ r2.quad=refineQuad(src,r2.quad); r2.is_vertical=vertOf(r2.quad,src.width,src.height); r2.engine="classic-fallback"; found=[r2]; }
+      }
+    }else{
+      const r=detect(src);
+      if(r){ r.quad=refineQuad(src,r.quad); r.is_vertical=vertOf(r.quad,src.width,src.height); found=[r]; }
+    }
+    list.forEach((rec,j)=>{
+      const r=found[j]||null;
+      rec.quad=r?r.quad:null; rec.auto0=r?r.quad:null; rec.cur=null;
+      rec.metrics=r?r.metrics:null; rec.engine=r?(r.engine||ENGINE):ENGINE;
+      rec.wholeImage=!!(r&&r.engine==="whole");
+      rec.is_vertical=r?!!r.is_vertical:false; rec.fail=!r;
+      rec.detTag=r?(r.tag||""):"";
+      if(found.length) rec.cardCount=found.length;
+      const st=state.items[rec.id]; if(st){st.quad=null;st.manual=false;st.gold=null;st.side="";st.steps=["全部重跑"];}
+      rec._el.remove(); buildItem(rec);
+    });
+    await new Promise(r2=>setTimeout(r2,0));
+  }
+  stat(); toast("重跑完成");
+};
+// 自动框 vs 人工基准框的偏差诊断 —— 这是"根据矫正步骤反推算法"的量化输入。
+// 注意两边都是归一化坐标（0~1），与图片像素无关，可以直接跨图聚合。
+function quadDiag(a,g){
+  if(!a||!g||a.length<4||g.length<4) return null;
+  const area=q=>{let s=0;for(let i=0;i<4;i++){const [x1,y1]=q[i],[x2,y2]=q[(i+1)%4];
+    s+=x1*y2-x2*y1;}return Math.abs(s)/2;};
+  const cen=q=>[(q[0][0]+q[1][0]+q[2][0]+q[3][0])/4,(q[0][1]+q[1][1]+q[2][1]+q[3][1])/4];
+  const dd=(p,r)=>Math.hypot(p[0]-r[0],p[1]-r[1]);
+  const arw=q=>{const ew=(dd(q[1],q[0])+dd(q[2],q[3]))/2, eh=(dd(q[3],q[0])+dd(q[2],q[1]))/2;
+    return ew/Math.max(1e-6,eh);};
+  const corners=a.map(p=>{
+    let bi=0,bd=1e9;
+    g.forEach((x,j)=>{const t=(x[0]-p[0])**2+(x[1]-p[1])**2;if(t<bd){bd=t;bi=j;}});
+    return [ +(g[bi][0]-p[0]).toFixed(4), +(g[bi][1]-p[1]).toFixed(4) ];
+  });
+  const A=area(a),G=area(g), ratio=G/Math.max(1e-6,A);
+  const ca=cen(a),cg=cen(g);
+  const shift=[+(cg[0]-ca[0]).toFixed(4),+(cg[1]-ca[1]).toFixed(4)];
+  const maxc=Math.max(...corners.map(c=>Math.hypot(c[0],c[1])));
+  let kind="ok";
+  if(Math.abs(Math.log(arw(g)/Math.max(1e-6,arw(a))))>0.12) kind="ratio";
+  else if(Math.abs(Math.log(ratio))>0.10) kind=ratio>1?"框太小":"框太大";
+  else if(Math.hypot(shift[0],shift[1])>0.02) kind="整体偏移";
+  else if(maxc>0.02) kind="单角偏差";
+  return {kind,area_auto:+A.toFixed(4),area_gold:+G.toFixed(4),area_ratio:+ratio.toFixed(3),
+    ar_auto:+arw(a).toFixed(3),ar_gold:+arw(g).toFixed(3),
+    center_shift:shift,corner_shift:corners,max_corner_shift:+maxc.toFixed(4)};
+}
+function buildReport(){
+  const items=recs.map(r=>{
+    const s=state.items[r.id]||{};
+    const aq=r.auto0||r.quad||null, gq=(s.gold&&s.gold.quad)||null;
+    return {no:r.no,idx:pad2(r.no),file:r.name,base:baseName(r.name),
+      key:`${pad2(r.no)}_${baseName(r.name)}${r.cardCount>1?`_c${(r.cardIdx|0)+1}`:""}`,
+      card_idx:(r.cardIdx|0),card_count:(r.cardCount|0),src_key:r.srcKey||r.id,det_tag:r.detTag||"",
+      auto:r.auto,metrics:r.metrics,engine:r.engine||ENGINE,
+      verdict:s.verdict||"",side:s.side||"",tags:s.tags||[],note:s.note||"",
+      gold:!!s.gold,steps:s.steps||[],
+      manual:!!s.manual,auto_quad:aq,gold_quad:gq,final_quad:s.quad||r.quad,
+      diag:quadDiag(aq,gq),
+      is_vertical:(!!r.is_vertical!==!!s.swap),is_vertical_auto:!!r.is_vertical,
+      aspect_swap:!!s.swap,rot:(((s.rotQ|0)%4)+4)%4,rot_deg:((((s.rotQ|0)%4)+4)%4)*90,
+      quad_clipped:!!(s.quad||r.quad||[]).some(p=>p[0]<0||p[0]>1||p[1]<0||p[1]>1),
+      whole_image:!!r.wholeImage};
+  });
+  // 聚合失效模式：哪个 kind 出现最多，就先改那条判据/权重
+  const tally={};
+  items.forEach(it=>{ if(it.diag){ tally[it.diag.kind]=(tally[it.diag.kind]||0)+1; } });
+  return {version:3,generated:new Date().toISOString(),
+    answers:state.q,
+    summary:{total:recs.length,
+      ok:items.filter(i=>i.verdict==="ok").length,
+      bad:items.filter(i=>i.verdict==="bad").length,
+      todo:items.filter(i=>!i.verdict).length,
+      gold:items.filter(i=>i.gold).length,
+      diag_kinds:tally},
+    items};
+}
+document.getElementById("btnExport").onclick=()=>{
+  if(!recs.length) return toast("先导入图片");
+  const blob=new Blob([JSON.stringify(buildReport(),null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`corrections_${new Date().toISOString().slice(0,16).replace(/[:T]/g,"-")}.json`;
+  a.click();URL.revokeObjectURL(a.href);
+  toast("已导出 corrections.json —— 发回给我即可");
+};
+document.getElementById("btnNext").onclick=()=>{
+  if(!recs.length) return toast("先导入图片");
+  const r=recs.find(x=>!(state.items[x.id]||{}).gold) || null;
+  if(!r) return toast("20 张全部存过基准了 ✓");
+  r._el.scrollIntoView({behavior:"smooth",block:"center"});
+  document.querySelectorAll(".item").forEach(e=>e.classList.remove("flash"));
+  r._el.classList.add("flash");
+  setTimeout(()=>r._el.classList.remove("flash"),1800);
+  toast(`下一张未存基准：${pad2(r.no)} ${shortTag(r.name)}`);
+};
+document.getElementById("btnDlAll").onclick=async()=>{
+  if(!recs.length) return toast("先导入图片");
+  toast("开始逐张下载（浏览器若提示「允许多个下载」请点允许）");
+  for(const r of recs){
+    const cv=r._el&&r._el.querySelector(".out canvas");
+    if(cv&&cv.width){
+      const st=state.items[r.id]||{};
+      dlCanvas(cv,outName(r,st));
+      await new Promise(x=>setTimeout(x,420));
+    }
+  }
+  toast(`已导出 ${recs.length} 张，文件名均为 序号_原文件名.png`);
+};
+document.getElementById("btnCopy").onclick=async()=>{
+  if(!recs.length) return toast("先导入图片");
+  const R=buildReport();
+  let t=`【身份证打分反馈】共${R.summary.total}张 基准${R.summary.gold} 可用${R.summary.ok} 错${R.summary.bad} 未审${R.summary.todo}\n`;
+  const A=R.answers;
+  t+=`\n[我的回答]\n`+QS.map(q=>`- ${q.t} → ${A[q.id]||"（未选）"}`).join("\n");
+  t+=`\n\n[逐张] （序号_原文件名）\n`;
+  R.items.forEach(it=>{
+    if(!it.verdict && !it.gold) return;
+    t+=`[${it.idx}] ${it.base} | ${it.verdict==="ok"?"可用":it.verdict==="bad"?"错":"未评"}`
+      +`${it.gold?" | ★基准":""}`
+      +`${it.side?" | "+it.side:""}${it.tags.length?" | "+it.tags.join(","):""}`
+      +`${it.rot_deg?" | 转"+it.rot_deg+"°":""}${it.aspect_swap?" | 换竖横":""}`
+      +`${it.diag&&it.diag.kind!=="ok"?" | 偏差:"+it.diag.kind:""}`
+      +`${it.steps.length?" | 步骤:"+it.steps.join(">"):""}`
+      +`${it.note?" | "+it.note:""}\n`;
+  });
+  try{await navigator.clipboard.writeText(t);toast("反馈文本已复制，粘到对话里即可");}
+  catch(e){prompt("复制下面内容：",t);}
+};
+
+/* ================= 启动 ================= */
+(function boot(){
+  load(); renderAsk();
+  // 测试钩子（供无头回归读取/注入）
+  window.__STATE__=state; window.__BUILD__=buildItem;
+  document.getElementById("boot").classList.add("hidden");
+})();
+</script>
+</body>
+</html>

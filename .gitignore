@@ -1,0 +1,19 @@
+# ===== 绝不入库：真实证件照片 =====
+# 身份证属于敏感个人信息，任何样本、裁切成品、拼接结果都不提交。
+images/
+proto/
+out_*/
+*.jpg
+*.jpeg
+contact.jpg
+tricky.jpg
+
+# ===== 常规 =====
+.DS_Store
+Thumbs.db
+node_modules/
+__pycache__/
+*.pyc
+*.log
+.workbuddy/
+.wbapp_*
