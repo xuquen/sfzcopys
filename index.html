@@ -140,6 +140,19 @@
   </section>
 
   <section>
+    <h2>为什么自己造这个轮子</h2>
+    <p class="sub">身份证拼版软件不少，多数要么塞一堆依赖包、要么要装客户端。这个项目的取舍只有六条：</p>
+    <div class="grid">
+      <div class="f"><span class="ic">→</span><b>体积小</b><span>只依赖浏览器，不内置一堆依赖包；唯一的「轮廓包」（角点检测模型）仅 1.9MB，用不用都行。</span></div>
+      <div class="f"><span class="ic">→</span><b>不挑设备</b><span>手机拍照、电脑复制粘贴（截图 / 扫描件）同一条流程，什么设备拿起来就用。</span></div>
+      <div class="f"><span class="ic">→</span><b>电脑微信零落盘</b><span>电脑端微信截图进剪贴板后，从导入到导出全程在浏览器里完成，不用找地方建本地过程文件。</span></div>
+      <div class="f"><span class="ic">→</span><b>OCR 命名（默认关）</b><span>识别只上传字段碎片小图，服务器看不到全图；不开就是纯本地。</span></div>
+      <div class="f"><span class="ic">→</span><b>手机微信导入（规划中）</b><span>网页无权读微信聊天，小程序接口被卡——这条路在找办法，暂时靠电脑端微信。</span></div>
+      <div class="f"><span class="ic">→</span><b>识别失败怎么办</b><span>先提高素材质量：正对拍摄、光线均匀、避免反光，多数识别失败是图的问题不是工具的问题。</span></div>
+    </div>
+  </section>
+
+  <section>
     <h2>三步出片</h2>
     <div class="steps">
       <div class="step"><b>导入</b><span>手机拍照 / 相册 / 微信图 / 桌面扫描件，一次可以丢多张。</span></div>
